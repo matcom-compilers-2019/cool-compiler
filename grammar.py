@@ -25,45 +25,41 @@ grammar = r"""
     expr_list : (expr)+
 
     ?expr : assignment
-         | arithm
+         | calc
          | conditional
          | loop
-         | block
-         | let
-         | case
          | new
-         | atom
-         | isvoid
-    
+
     assignment : CNAME "<""-" expr
     
-    isvoid : "i""s""v""o""i""d" expr
+    ?calc : arithm "<" larithm -> less | arithm "=" larithm -> eq | arithm "<""=" larithm -> leq | arithm | larithm
+
+    ?arithm : arithm "+" term -> plus | arithm "-" term -> minus| term
+    ?term : term "*" num_atom -> times| term "/" num_atom -> div| num_atom
+
+    ?larithm : arithm "+" lterm -> lplus | arithm "-" lterm -> lminus | lterm
+    ?lterm : lterm "*" let -> ltimes | lterm "/" let -> ldiv | let
     
-    new : "n""e""w" TYPE
+    conditional : "i""f" calc "t""h""e""n" expr "e""l""s""e" expr "f""i"
 
-    ?arithm : term "+" arithm -> plus | term "-" arithm -> minus| term
-    ?term : num_atom "*" arithm -> times| num_atom "/" arithm -> div| num_atom -> number| dispatch
-
-    conditional : "i""f" bool_expr "t""h""e""n" expr "e""l""s""e" expr "i""f"
-
-    loop : "w""h""i""l""e" bool_expr "l""o""o""p" expr "p""o""o""l"
+    loop : "w""h""i""l""e" calc "l""o""o""p" expr "p""o""o""l"
     
-    ?bool_expr : boolean_atom "<" bool_expr -> less| boolean_atom "<""=" bool_expr -> leq| boolean_atom "=" bool_expr -> eq
-
-    block : "{" (expr";")+ "}"
-
-    let : "l""e""t" decl_list "i""n" expr
-    decl_list : decl["," decl]*
-    decl : CNAME ":" TYPE ["<""-" expr]
-
     case : "c""a""s""e" expr "o""f" branches "e""s""a""c"
     branches : (branch)+
     branch : CNAME ":" TYPE "="">" expr ";" 
 
-    atom : num_atom | boolean_atom
-    num_atom : SIGNED_NUMBER -> number | CNAME | "("arithm")" | "~"arithm
-    boolean_atom : "true" -> true | "false" -> false | "not" bool_expr -> not
+    ?atom : num_atom | boolean_atom | dispatch
+    ?num_atom : SIGNED_NUMBER -> number | CNAME | "("calc")" | "~"calc | case | block | isvoid 
+    ?boolean_atom : "true" -> true | "false" -> false | "not" expr -> not
     
+    isvoid : "i""s""v""o""i""d" expr
+    new : "n""e""w" TYPE
+    block : "{" (expr";")+ "}"
+    
+    let : "l""e""t" decl_list "i""n" expr
+    decl_list : decl("," decl)*
+    decl : CNAME ":" TYPE ["<""-" expr]
+
     dispatch : point_dispatch | short_dispatch | parent_dispatch
     point_dispatch : expr"."CNAME"("func_params")"
     short_dispatch : CNAME"("func_params")"
