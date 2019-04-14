@@ -1,15 +1,16 @@
 from lark import Lark
 
 grammar = r"""
-    ?program : (class_list)* main_class (class_list)*
+    ?program : [class_list] main_class [class_list]
 
-    class_list : (class)*
-    class : "class" TYPE ["inherits" TYPE] "{" class_body "};"
+    class_list : (class)+
+    class : "c""l""a""s""s" TYPE ["i""n""h""e""r""i""t""s" TYPE] "{" class_body "}"";"
     ?class_body : feature_list
 
-    main_class : "class Main {" main_feature_list "};"
-    main_feature_list : (feature_list)* main_method (feature_list)*
-    main_method : "main():Int{" method_body "}"
+    main_class : "c""l""a""s""s" "M""a""i""n" "{" main_feature_list "}"";"
+
+    main_feature_list :  main_method 
+    main_method : "m""a""i""n""("")"":""I""n""t""{" method_body "}"
 
     feature_list : (feature)*
     ?feature : attr | method
@@ -19,10 +20,11 @@ grammar = r"""
     method : CLASS_BODY_ID "("decl_params")" ":" TYPE "{" method_body "}"
     decl_params : (decl_param)*
     decl_param : CNAME ":" TYPE
-    ?method_body : expr_list
+    ?method_body : expr
     
     expr_list : (expr)+
-    expr : assignment
+
+    ?expr : assignment
          | arithm
          | conditional
          | loop
@@ -33,34 +35,34 @@ grammar = r"""
          | atom
          | isvoid
     
-    assignment : CNAME "<-" expr
+    assignment : CNAME "<""-" expr
     
-    isvoid : "isvoid" expr
+    isvoid : "i""s""v""o""i""d" expr
     
-    new : "new" TYPE
+    new : "n""e""w" TYPE
 
-    arithm : term "+" arithm | term "-" arithm | term
-    term : num_atom "*" arithm | num_atom "/" arithm | num_atom | dispatch
+    ?arithm : term "+" arithm -> plus | term "-" arithm -> minus| term
+    ?term : num_atom "*" arithm -> times| num_atom "/" arithm -> div| num_atom -> number| dispatch
 
-    conditional : "if" bool_expr "then" expr "else" expr "if"
+    conditional : "i""f" bool_expr "t""h""e""n" expr "e""l""s""e" expr "i""f"
 
-    loop : "while" bool_expr "loop" expr "pool"
+    loop : "w""h""i""l""e" bool_expr "l""o""o""p" expr "p""o""o""l"
     
-    bool_expr : boolean_atom "<" bool_expr | boolean_atom "<=" bool_expr | boolean_atom "=" bool_expr
+    ?bool_expr : boolean_atom "<" bool_expr -> less| boolean_atom "<""=" bool_expr -> leq| boolean_atom "=" bool_expr -> eq
 
     block : "{" (expr";")+ "}"
 
-    let : "let" decl_list "in" expr
+    let : "l""e""t" decl_list "i""n" expr
     decl_list : decl["," decl]*
-    decl : CNAME ":" TYPE ["<-" expr]
+    decl : CNAME ":" TYPE ["<""-" expr]
 
-    case : "case" expr "of" branches "esac"
+    case : "c""a""s""e" expr "o""f" branches "e""s""a""c"
     branches : (branch)+
-    branch : CNAME ":" "TYPE" "=>" expr ";" 
+    branch : CNAME ":" TYPE "="">" expr ";" 
 
     atom : num_atom | boolean_atom
     num_atom : SIGNED_NUMBER -> number | CNAME | "("arithm")" | "~"arithm
-    boolean_atom : "true" -> true | "false" -> false | "not" bool_expr
+    boolean_atom : "true" -> true | "false" -> false | "not" bool_expr -> not
     
     dispatch : point_dispatch | short_dispatch | parent_dispatch
     point_dispatch : expr"."CNAME"("func_params")"
@@ -74,6 +76,8 @@ grammar = r"""
 
     %import common.CNAME
     %import common.LCASE_LETTER
+    %import common.UCASE_LETTER
+    %import common.SIGNED_NUMBER
     %import common.WS
 
     %ignore WS
