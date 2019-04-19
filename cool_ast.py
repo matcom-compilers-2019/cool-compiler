@@ -1,28 +1,39 @@
+class Node:
+    pass
 
-class ClassListNode:
+class ProgramNode(Node):
+    def __init__(self, class_list):
+        self.class_list = class_list
+
+class ClassListNode(Node):
     def __init__(self, clss):
         self.classes = clss
 
-class ClassNode:
+class ClassNode(Node):
     def __init__(self, name, features, parent=None):
         self.name = name
         self.features = features
         self.parent = parent
 
-class AttributeNode:
+class AttributeNode(Node):
     def __init__(self, name, t, value):
         self.name = name
         self.type = t
         self.value = value
 
-class MethodNode:
-    def __init__(self, name, params,return_type, body):
+class MethodNode(Node):
+    def __init__(self, name, params, return_type, body):
         self.name = name
         self.params = params
         self.return_type = return_type
         self.body = body
 
-class ExpressionNode:
+class ParamNode(Node):
+    def __init__(self, name, t):
+        self.name = name
+        self.type = t
+
+class ExpressionNode(Node):
     pass
 
 class AssignationNode(ExpressionNode):
@@ -35,31 +46,39 @@ class BinaryNode(ExpressionNode):
         self.left = left
         self.right = right
 
-class LessNode(BinaryNode):
+class ComparerNode(BinaryNode):
     def __init__(self, left, right):
         super().__init__(left, right)
 
-class EqualNode(BinaryNode):
+class ArithmeticNode(BinaryNode):
     def __init__(self, left, right):
         super().__init__(left, right)
 
-class LeqNode(BinaryNode):
+class LessNode(ComparerNode):
     def __init__(self, left, right):
         super().__init__(left, right)
 
-class SumNode(BinaryNode):
+class EqualNode(ComparerNode):
     def __init__(self, left, right):
         super().__init__(left, right)
 
-class SubNode(BinaryNode):
+class LeqNode(ComparerNode):
     def __init__(self, left, right):
         super().__init__(left, right)
 
-class TimesNode(BinaryNode):
+class SumNode(ArithmeticNode):
     def __init__(self, left, right):
         super().__init__(left, right)
 
-class DivNode(BinaryNode):
+class SubNode(ArithmeticNode):
+    def __init__(self, left, right):
+        super().__init__(left, right)
+
+class TimesNode(ArithmeticNode):
+    def __init__(self, left, right):
+        super().__init__(left, right)
+
+class DivNode(ArithmeticNode):
     def __init__(self, left, right):
         super().__init__(left, right)
 
@@ -156,3 +175,11 @@ class LetNode(AtomicNode):
 class NewNode(AtomicNode):
     def __init__(self, t):
         self.type = t
+
+class PrintNode(AtomicNode):
+    def __init__(self, expr):
+        self.expr = expr
+
+class ScanNode(AtomicNode):
+    def __init__(self, expr):
+        self.expr = expr

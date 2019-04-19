@@ -1,7 +1,7 @@
 from lark import Lark
 
 grammar = r"""
-    ?program : class_list
+    program : class_list
 
     class_list : (cls)+
     ?cls : simple_cls | descendant_cls
@@ -45,10 +45,12 @@ grammar = r"""
     branches : (branch)+
     branch : CNAME ":" TYPE "="">" expr ";" 
 
-    ?atom : num_atom | boolean_atom | dispatch
+    ?atom : num_atom | boolean_atom | dispatch | printx | scan
     ?num_atom : SIGNED_NUMBER -> number | CNAME -> id | "("calc")" -> braces | "~"num_atom -> neg | case | block | isvoid 
     ?boolean_atom : "t""r""u""e" -> true | "f""a""l""s""e" -> false | "n""o""t" expr -> notx
     
+    printx : "p""r""i""n""t" expr
+    scan : "s""c""a""n"
     isvoid : "i""s""v""o""i""d" expr
     new : "n""e""w" TYPE
     block : "{" (expr";")+ "}"

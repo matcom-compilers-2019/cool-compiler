@@ -3,6 +3,9 @@ from cool_ast import *
 
 class ToCoolASTTransformer(Transformer):
 
+    def program(self, cls_list):
+        return ProgramNode(cls_list)
+
     def class_list(self, clss):
         return ClassListNode(clss)
 
@@ -29,9 +32,9 @@ class ToCoolASTTransformer(Transformer):
     
     def decl_param(self, param):
         name, t = param[0], param[1]
-        return name, t
+        return ParamNode(name, t)
     
-    def assigment(self, children):
+    def assignment(self, children):
         name, val = children[0], children[1]
         return AssignationNode(name, val)
     
@@ -159,3 +162,9 @@ class ToCoolASTTransformer(Transformer):
     def loop(self, children):
         cond, expr = children[0], children[1]
         return LoopNode(cond, expr)
+    
+    def printx(self, child):
+        return PrintNode(child)
+    
+    def scan(self, child):
+        return ScanNode(child)
