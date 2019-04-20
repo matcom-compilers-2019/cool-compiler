@@ -1,3 +1,2 @@
-n ast.classes:
-#     print(c.name)
-# print(ast)
+
+checkSemanticVisitor = CheckSemanticsVisitor()

@@ -1,16 +1,19 @@
-
 class Scope:
     def __init__(self, parent=None):
         self.locals = {}
-        self.types = []
+        self.types = [] if parent else [('Object', None, []),('Int', 'Object', []), ('Bool', 'Object', []), ('String', 'Object', [])]
+        self.methods = []
         self.parent = parent
         self.children = []
 
-    def add_type(self, type_name, features, parent = None):
+    def add_type(self, type_name, methods, parent = 'Object'):
         if not self.check_type(type_name) and (not parent or self.check_type(parent)):
-            self.types.append((type_name, parent, features))
+            self.types.append((type_name, parent, methods))
             return True
         return False
+    
+    def add_method(self, method):
+        self.methods.append(method)
     
     def get_type(self, vname):
         if not self.is_defined(vname):
@@ -34,7 +37,7 @@ class Scope:
             t = curr.local_type(type_name)
             if t:
                 return t
-            curr = self.parent
+            curr = curr.parent
         return False
 
     def define_variable(self, vname, vtype):
@@ -60,7 +63,7 @@ class Scope:
         return vname in self.locals.keys()
 
     def is_local_feature(self, mname):
-        return mname in [name for name in [method.name.value for method in [t[2] for t in self.types]]]
+        return mname in [m.name.value for m in self.methods]
     
     def is_defined_in_type(self, t, mname):
         curr = self
@@ -72,10 +75,9 @@ class Scope:
         return False
     
     def get_local_method(self, mname):
-        for t in self.types:
-            for f in t[2]:
-                if f.name.value == mname:
-                    return f
+        for f in self.methods:
+            if f.name.value == mname:
+                return f
         return False
 
     def get_method(self, tp, mname):
@@ -108,18 +110,18 @@ class Scope:
         return False
             
 
-    def inherits(self, t1, t2):
+    def inherits(self, t1, t2, level):
         curr = self
         while curr and not curr.local_type(t1):
             curr = curr.parent
         if not curr:
-            return False
+            return False, -1
         if t1 == t2:
-            return True
+            return True, level
         p = [t[1] for t in curr.types if t[0] == t1]
         if not p:
-            return False
-        return curr.inherits(p, t2)        
+            return False, -1
+        return curr.inherits(p, t2, level + 1), level + 1        
         
 
 

@@ -146,7 +146,7 @@ class ShortDispatchNode(DispatchNode):
         super().__init__(method_name, params)
 
 class PointDispatchNode(DispatchNode):
-    def __init__(self, expr, t,method_name, params):
+    def __init__(self, expr, method_name, params):
         super().__init__(method_name, params)
         self.expr = expr
 

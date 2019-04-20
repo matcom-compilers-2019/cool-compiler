@@ -1,4 +1,5 @@
 from lark import Lark
+#TODO: Encontrar la forma de quitar los keywords de los id disponibles y asi poder agregar variables a la produccion 'calc'.
 
 grammar = r"""
     program : class_list
@@ -15,11 +16,14 @@ grammar = r"""
     attr : CLASS_BODY_ID ":" TYPE ["<""-"expr]";"
     
     method : CLASS_BODY_ID "("decl_params")" ":" TYPE "{" expr "}"
-    decl_params : (decl_param)*
+    decl_params : (decl_param)?("," decl_param)*
     decl_param : CNAME ":" TYPE
 
-    ?expr : assignment
+    ?expr : decl 
+         | assignment
          | calc
+         | ar
+         | atom
          | conditional
          | loop
          | new
@@ -27,7 +31,7 @@ grammar = r"""
 
     assignment : CNAME "<""-" expr
     
-    ?calc : ar "<" ar -> less | ar "=" ar -> eq | ar "<""=" ar -> leq | ar
+    ?calc : ar "<" ar -> less | ar "=" ar -> eq | ar "<""=" ar -> leq | boolean_atom
     ?ar : arithm | larithm
 
     ?arithm : arithm "+" term -> plus | arithm "-" term -> minus| term
@@ -64,7 +68,7 @@ grammar = r"""
     short_dispatch : CNAME"("func_params")"
     parent_dispatch : expr"@"TYPE"."CNAME"("func_params")"
 
-    func_params : expr[","expr]*
+    func_params : (expr)?(","expr)*
 
     string : ESCAPED_STRING
 

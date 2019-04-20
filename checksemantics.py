@@ -21,8 +21,12 @@ class CheckSemanticsVisitor:
         result = True
         for c in node.classes:
             child_scope = scope.create_child_scope()
+            if c.parent:
+                scope.add_type(c.name.value, [m for m in c.features if isinstance(m, ast.MethodNode)], c.parent.value)
+            else:
+                scope.add_type(c.name.value, [m for m in c.features if isinstance(m, ast.MethodNode)])
+        for c in node.classes:
             result = result and self.visit(c, child_scope, errors)
-            scope.add_type(c.name.value, c.parent.value, c.features)
         return result
     
     @visitor.when(ast.ClassNode)
@@ -46,6 +50,7 @@ class CheckSemanticsVisitor:
     @visitor.when(ast.MethodNode)
     def visit(self, node, scope, errors):
         child_scope = scope.create_child_scope()
+        child_scope.methods = [m for m in scope.methods]
         fine = True
         if not child_scope.check_type(node.return_type.value):
             errors.append('Method declaration failed because the return type is not defined at line %d column %d' %(node.return_type.line, node.return_type.column))
@@ -53,13 +58,15 @@ class CheckSemanticsVisitor:
         for p in node.params:
             fine = fine and self.visit(p, child_scope, errors)
         fine = fine and self.visit(node.body, child_scope, errors)
-        
-        return fine if not fine else node.return_type.value
+        if not fine:
+            return ERROR
+        scope.add_method(node)
+        return fine
     
     @visitor.when(ast.ParamNode)
     def visit(self, node, scope, errors):
         if not scope.check_type(node.type.value):
-            errors.append('Parameter declaration failed because the type is not defined at line %d column %d' % (node.type.line, node.type.colummn))
+            errors.append('Parameter declaration failed because the type is not defined at line %d column %d' % (node.type.line, node.type.column))
             return False
         scope.define_variable(node.name.value, node.type.value)
         return node.type.value
@@ -78,7 +85,7 @@ class CheckSemanticsVisitor:
         rleft = self.visit(node.left, scope, errors)
         rright = self.visit(node.right, scope, errors)
         if rleft != rright or rleft != "Int" or rright != "Int":
-            errors.append('Operator error: the operand types do not match. Both operands must be "Int"')
+            errors.append('Operator error: the operand types do not match. Both operands must be "INTEGER"')
             return ERROR
         return rleft
 
@@ -107,15 +114,16 @@ class CheckSemanticsVisitor:
 
     @visitor.when(ast.BlockNode)
     def visit(self, node, scope, errors):
-        for expr in node.expr_list:
-            rtype = self.visit(expr, scope, errors)
+        child_scope = scope.create_child_scope()
+        for expr in node.exprs:
+            rtype = self.visit(expr, child_scope, errors)
         return rtype
 
     @visitor.when(ast.AssignationNode)
     def visit(self, node, scope, errors):
-        rtype = self.visit(node.expr, scope, errors)
+        rtype = self.visit(node.value, scope, errors)
         if not scope.is_defined(node.name.value):
-            errors.append('Variable "%s" not defined at line %d column %d]: .' % (node.name.value, node.name.row, node.name.colummn))
+            errors.append('Variable "%s" not defined at line %d column %d]: .' % (node.name.value, node.name.line, node.name.column))
             return ERROR
         return rtype
 
@@ -133,10 +141,10 @@ class CheckSemanticsVisitor:
 
     @visitor.when(ast.VarNode)
     def visit(self, node, scope, errors):
-        if not scope.is_defined(node.name.value):
-            errors.append('Variable "%s" not defined at  line %s column %s.' % (node.name.value, node.name.row, node.name.column))
+        if not scope.is_defined(node.id.value):
+            errors.append('Variable "%s" not defined at  line %s column %s.' % (node.id.value, node.id.line, node.id.column))
             return ERROR
-        return scope.get_type(node.name.value)
+        return scope.get_type(node.id.value)
 
     @visitor.when(ast.PrintNode)
     def visit(self, node, scope, errors):
@@ -153,14 +161,21 @@ class CheckSemanticsVisitor:
     @visitor.when(ast.DeclarationNode)
     def visit(self, node, scope, errors):
         rtype = self.visit(node.expr, scope, errors)
-        if scope.is_local(node.idx_token.text_token):
-            errors.append('Variable "%s" already defined at line:%d column:%d.' % (node.name.value, node.name.row, node.name.column))
+        t = node.type.value
+        if t != rtype:
+            errors.append('Declaration failed because the type of the variable and the type of the expression do not match at line %d column %d' % (node.name.line, node.name.column))
             return ERROR
-        scope.define_variable(node.name.value, node.type.value)
-        return rtype
+        if scope.is_local(node.name.value):
+            errors.append('Variable "%s" already defined at line:%d column:%d.' % (node.name.value, node.name.line, node.name.column))
+            return ERROR
+        scope.define_variable(node.name.value, t)
+        return t
     
     @visitor.when(ast.NewNode)
     def visit(self, node, scope, errors):
+        if not scope.check_type(node.type.value):
+            errors.append('Type "%s" not defined at line %d column %d' % (node.type.value, node.type.line, node.type.column))
+            return ERROR
         return node.type.value
     
     @visitor.when(ast.LoopNode)
@@ -185,8 +200,9 @@ class CheckSemanticsVisitor:
     def visit(self, node, scope, errors):
         method = scope.get_local_method(node.method_name.value)
         if not method:
+            print('Method "%s" not defined at line %d column %d' % (node.method_name.value, node.method_name.line, node.method_name.column))
             return ERROR
-        return method.return_type
+        return method.return_type.value
 
     @visitor.when(ast.PointDispatchNode)
     def visit(self, node, scope, errors):
@@ -201,9 +217,9 @@ class CheckSemanticsVisitor:
     @visitor.when(ast.ParentDispatchNode)
     def visit(self, node, scope, errors):
         t = self.visit(node.expr, scope, errors)
-        if not scope.inherits(t, node.parent.value):
+        if not scope.inherits(t, node.parent.value, 0)[0]:
             return ERROR
-        m = scope.get_mehthod(node.parent.value, node.method_name.value)
+        m = scope.get_method(node.parent.value, node.method_name.value)
         if not m:
             return ERROR
         return m.return_type.value
@@ -217,4 +233,15 @@ class CheckSemanticsVisitor:
         maint = self.visit(node.main_expr, scope, errors)
         if not maint:
             return ERROR
-        #TODO: Verify the lowest ancestor among the branches.
+        result = ERROR
+        minLevel = 100100
+        for b in node.branches:
+            btype = self.visit(b, scope, errors)
+            if not btype:
+                return ERROR
+            _type = b.type.value
+            t, level = scope.inherits(maint, _type, 0)
+            if t and level < minLevel:
+                result = btype
+                minLevel = level
+        return result

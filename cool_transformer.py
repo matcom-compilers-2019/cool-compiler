@@ -4,7 +4,7 @@ from cool_ast import *
 class ToCoolASTTransformer(Transformer):
 
     def program(self, cls_list):
-        return ProgramNode(cls_list)
+        return ProgramNode(cls_list[0])
 
     def class_list(self, clss):
         return ClassListNode(clss)
@@ -94,7 +94,7 @@ class ToCoolASTTransformer(Transformer):
         return DeclarationNode(name, t, expr)
 
     def neglet(self, ch):
-        return OpositeNode(ch)
+        return OpositeNode(ch[0])
 
     def number(self, num):
         return NumberNode(float(num[0]))
@@ -106,19 +106,19 @@ class ToCoolASTTransformer(Transformer):
         return BoolNode(False)
     
     def string(self, ch):
-        return StrtingNode(ch)
+        return StrtingNode(ch[0])
 
     def id(self, var):
-        return VarNode(var)
+        return VarNode(var[0])
     
     def braces(self, expr):
         return expr
     
     def neg(self, expr):
-        return OpositeNode(expr)
+        return OpositeNode(expr[0])
     
     def notx(self, expr):
-        return NotNode(expr)
+        return NotNode(expr[0])
     
     def case(self, children):
         expr, branches = children[0], children[1]
@@ -138,7 +138,7 @@ class ToCoolASTTransformer(Transformer):
         return IsVoidNode(expr)
     
     def new(self, t):
-        return NewNode(t)
+        return NewNode(t[0])
     
     def point_dispatch(self, children):
         expr, name, params = children[0], children[1], children[2]
@@ -164,7 +164,7 @@ class ToCoolASTTransformer(Transformer):
         return LoopNode(cond, expr)
     
     def printx(self, child):
-        return PrintNode(child)
+        return PrintNode(child[0])
     
     def scan(self, child):
-        return ScanNode(child)
+        return ScanNode(child[0])
