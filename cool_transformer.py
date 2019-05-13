@@ -10,17 +10,17 @@ class ToCoolASTTransformer(Transformer):
         return ClassListNode(clss)
 
     def simple_cls(self, t):
-        return ClassNode(t[0], t[1])
+        return ClassNode(t[1], t[2])
     
     def descendant_cls(self, children):
-        name, parent, body = children[0], children[1], children[2]
+        name, parent, body = children[1], children[3], children[4]
         return ClassNode(name, body, parent=parent)
     
     def feature_list(self, features):
         return features
     
     def attr(self, children):
-        name, t, expr = children[0], children[1], children[2]
+        name, t, expr = children[0], children[1], children[2] if len(children)==3 else None
         return AttributeNode(name, t, expr)
     
     def method(self, children):
@@ -83,14 +83,14 @@ class ToCoolASTTransformer(Transformer):
         return DivNode(l, r)
     
     def let(self, children):
-        let_part, in_part = children[0], children[1]
+        let_part, in_part = children[1], children[3]
         return LetNode(let_part, in_part)
     
     def decl_list(self, l):
         return l
     
     def decl(self, children):
-        name, t, expr = children[0], children[1], children[2]
+        name, t, expr = children[0], children[1], children[2] if len(children)==3 else None
         return DeclarationNode(name, t, expr)
 
     def neglet(self, ch):
@@ -121,7 +121,7 @@ class ToCoolASTTransformer(Transformer):
         return NotNode(expr[0])
     
     def case(self, children):
-        expr, branches = children[0], children[1]
+        expr, branches = children[1], children[3]
         return CaseNode(expr, branches)
 
     def branches(self, b):
@@ -135,10 +135,10 @@ class ToCoolASTTransformer(Transformer):
         return BlockNode(exprs)
     
     def isvoid(self, expr):
-        return IsVoidNode(expr)
+        return IsVoidNode(expr[1])
     
     def new(self, t):
-        return NewNode(t[0])
+        return NewNode(t[1])
     
     def point_dispatch(self, children):
         expr, name, params = children[0], children[1], children[2]
@@ -156,15 +156,12 @@ class ToCoolASTTransformer(Transformer):
         return children
     
     def conditional(self, children):
-        if_part, then_part, else_part = children[0], children[1], children[2]
+        if_part, then_part, else_part = children[1], children[3], children[5]
         return ConditionalNode(if_part, then_part, else_part)
     
     def loop(self, children):
         cond, expr = children[0], children[1]
         return LoopNode(cond, expr)
     
-    def printx(self, child):
-        return PrintNode(child[0])
-    
-    def scan(self, child):
-        return ScanNode(child[0])
+    def void(self, child):
+        return VoidNode()

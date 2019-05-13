@@ -183,3 +183,6 @@ class PrintNode(AtomicNode):
 class ScanNode(AtomicNode):
     def __init__(self, expr):
         self.expr = expr
+
+class VoidNode(AtomicNode):
+    pass

@@ -1,4 +1,5 @@
 from lark import Lark
+
 #TODO: Encontrar la forma de quitar los keywords de los id disponibles y asi poder agregar variables a la produccion 'calc'.
 
 grammar = r"""
@@ -6,8 +7,8 @@ grammar = r"""
 
     class_list : (cls)+
     ?cls : simple_cls | descendant_cls
-    descendant_cls : "c""l""a""s""s" TYPE "i""n""h""e""r""i""t""s" TYPE "{" class_body "}"";"
-    simple_cls : "c""l""a""s""s" TYPE "{" class_body "}"";"
+    descendant_cls : CLASS TYPE INHERITS TYPE "{" class_body "}"";"
+    simple_cls : CLASS TYPE "{" class_body "}"";"
     ?class_body : feature_list
 
     feature_list : feature*
@@ -22,8 +23,6 @@ grammar = r"""
     ?expr : decl 
          | assignment
          | calc
-         | ar
-         | atom
          | conditional
          | loop
          | new
@@ -31,35 +30,33 @@ grammar = r"""
 
     assignment : CNAME "<""-" expr
     
-    ?calc : ar "<" ar -> less | ar "=" ar -> eq | ar "<""=" ar -> leq | boolean_atom
+    ?calc : ar "<" ar -> less | ar "=" ar -> eq | ar "<""=" ar -> leq | ar
     ?ar : arithm | larithm
 
-    ?arithm : arithm "+" term -> plus | arithm "-" term -> minus| term
-    ?term : term "*" num_atom -> times| term "/" num_atom -> div| num_atom
+    ?arithm : arithm "+" term -> plus | arithm "-" term -> minus | term
+    ?term : term "*" atom -> times| term "/" atom -> div | atom
 
     ?larithm : arithm "+" lterm -> lplus | arithm "-" lterm -> lminus | lterm
     ?lterm : term "*" latom -> ltimes | lterm "/" latom -> ldiv | latom
     ?latom : "~"latom -> neglet | let 
     
-    conditional : "i""f" calc "t""h""e""n" expr "e""l""s""e" expr "f""i"
+    conditional : IF calc THEN expr ELSE expr FI
 
-    loop : "w""h""i""l""e" calc "l""o""o""p" expr "p""o""o""l"
+    loop : WHILE calc LOOP expr POOL
     
-    case : "c""a""s""e" expr "o""f" branches "e""s""a""c"
+    case : CASE expr OF branches ESAC
     branches : (branch)+
-    branch : CNAME ":" TYPE "="">" expr ";" 
+    branch :  CNAME ":" TYPE "="">" expr ";" 
 
-    ?atom : num_atom | boolean_atom | dispatch | printx | scan
+    ?atom : num_atom | boolean_atom | dispatch
     ?num_atom : SIGNED_NUMBER -> number | CNAME -> id | "("calc")" -> braces | "~"num_atom -> neg | case | block | isvoid 
-    ?boolean_atom : "t""r""u""e" -> true | "f""a""l""s""e" -> false | "n""o""t" expr -> notx
+    ?boolean_atom : TRUE -> true | FALSE -> false | NOT expr -> notx
     
-    printx : "p""r""i""n""t" expr
-    scan : "s""c""a""n"
-    isvoid : "i""s""v""o""i""d" expr
-    new : "n""e""w" TYPE
+    isvoid : ISVOID expr
+    ?new : NEW TYPE
     block : "{" (expr";")+ "}"
     
-    let : "l""e""t" decl_list "i""n" expr
+    let : LET decl_list IN expr
     decl_list : decl("," decl)*
     decl : CNAME ":" TYPE ["<""-" expr]
 
@@ -74,6 +71,29 @@ grammar = r"""
 
     CLASS_BODY_ID : LCASE_LETTER[CNAME]
     TYPE : UCASE_LETTER[CNAME]
+    
+    CLASS : "class"
+    ELSE : "else"
+    FALSE : "false"
+    FI : "fi"
+    IF : "if"
+    IN : "in"
+    INHERITS : "inherits"
+    ISVOID : "isvoid"
+    LET : "let"
+    LOOP : "loop"
+    POOL : "pool"
+    THEN : "then"
+    WHILE : "while"
+    CASE : "case"
+    ESAC : "esac"
+    NEW : "new"
+    OF : "of"
+    NOT : "not"
+    TRUE : "true"
+    SELF :  "self"
+
+    
 
     %import common.ESCAPED_STRING
     %import common.CNAME
@@ -81,29 +101,10 @@ grammar = r"""
     %import common.UCASE_LETTER
     %import common.SIGNED_NUMBER
     %import common.WS
-
     %ignore WS
     
 """
 
 keywords = [
-    "class",
-    "else",
-    "false",
-    "fi",
-    "if",
-    "in",
-    "inherits",
-    "isvoid",
-    "let",
-    "loop",
-    "pool",
-    "then",
-    "while",
-    "case",
-    "esac",
-    "new",
-    "of",
-    "not",
-    "true"
+    
 ]
