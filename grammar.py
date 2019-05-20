@@ -52,6 +52,8 @@ grammar = r"""
     ?num_atom : SIGNED_NUMBER -> number | CNAME -> id | "("calc")" -> braces | "~"num_atom -> neg | case | block | isvoid 
     ?boolean_atom : TRUE -> true | FALSE -> false | NOT expr -> notx
     
+    //ID : /^(?!.*("c""l""a""s""s"|"i""f"|"t""h""e""n"|"e""l""s""e"|"f""i"|"c""a""s""e"|"o""f"|"e""s""a""c"|"l""e""t"|"i""n"|"t""r""u""e"|"f""a""l""s""e"|"i""n""h""e""r""i""t""s"|"i""s""v""o""i""d"|"l""o""o""p"|"p""o""o""l"|"w""h""i""l""e"|"n""o""t"|"s""e""l""f"|"n""e""w")).*$/
+    
     isvoid : ISVOID expr
     ?new : NEW TYPE
     block : "{" (expr";")+ "}"

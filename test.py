@@ -43,6 +43,7 @@ class Main{
             y@A.t();
             v : Int <- 4 + ~let t : Int <- 5 in t + 5; 
             case v of s : Int => if true then 5 + 5 else 3 fi; esac; 
+            0;
         } 
     } 
 };

@@ -50,6 +50,8 @@ class Scope:
         self.methods.append(method)
     
     def get_type(self, vname):
+        if vname == 'self':
+            return self.inside
         if not self.is_defined(vname):
             return False
         curr = self

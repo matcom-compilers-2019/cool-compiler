@@ -33,7 +33,7 @@ class CheckSemanticsVisitor:
         for f in node.features:
             if not self.visit(f, scope, errors):
                 result = False
-        scope.define_variable('self', node.name.value)
+        #scope.define_variable('self', node.name.value)
         return result
     
     @visitor.when(ast.AttributeNode)
@@ -71,6 +71,7 @@ class CheckSemanticsVisitor:
         t = node.return_type.value if node.return_type.value != 'SELF_TYPE' else child_scope.inside
         fine = fine if fine != 'SELF_TYPE' else child_scope.inside
         if t != fine:
+            errors.append('The return type does not match with the expression in the body of method %s at line %d, column %d' % (node.name.value, node.return_type.line, node.return_type.column))
             return ERROR
         scope.add_method(node)
         return fine
@@ -130,8 +131,10 @@ class CheckSemanticsVisitor:
     @visitor.when(ast.BlockNode)
     def visit(self, node, scope, errors):
         child_scope = scope.create_child_scope()
+        rtype = True
         for expr in node.exprs:
-            rtype = self.visit(expr, child_scope, errors)
+            if not self.visit(expr, child_scope, errors):
+                rtype = False
         return rtype
 
     @visitor.when(ast.AssignationNode)
@@ -194,7 +197,7 @@ class CheckSemanticsVisitor:
         cvisit = self.visit(node.condition, scope, errors)
         child_scope = scope.create_child_scope()
         result = self.visit(node.body, child_scope, errors)
-        return cvisit if not cvisit else 'Void'
+        return ERROR if not cvisit or not result else 'Void'
     
     @visitor.when(ast.ConditionalNode)
     def visit(self, node, scope, errors):
@@ -211,15 +214,16 @@ class CheckSemanticsVisitor:
         if len(node.params) != len(method.params):
             errors.append('Method "%s" receives %d parameters, %d was given at line %d, column %d.'%(method.name.value, len(method.params), len(node.params), node.method_name.line, node.method_name.column))
             return False
+        result = True
         for i in range(len(node.params)):
             arg_t = self.visit(node.params[i], scope, errors)
             if not arg_t:
-                return False
+                result = False
             param_t = method.params[i].type.value
             if arg_t != 'Void' and not scope.inherits(arg_t, param_t, 0):
                 errors.append('Parameter %s has type %s but %s was given at line %d, column %d.' % (method.params[i].name.value, param_t, arg_t, node.params[i].name.line, node.params[i].name.column))
-                return False
-        return True
+                result = False
+        return False
         
     @visitor.when(ast.ShortDispatchNode)
     def visit(self, node, scope, errors):
