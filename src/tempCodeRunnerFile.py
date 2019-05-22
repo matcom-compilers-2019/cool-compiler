@@ -1,0 +1,2 @@
+
+checkSemanticVisitor = CheckSemanticsVisitor()

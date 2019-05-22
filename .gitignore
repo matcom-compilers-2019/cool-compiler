@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # File created using '.gitignore Generator' for Visual Studio Code: https://bit.ly/vscode-gig
 
 # Created by https://www.gitignore.io/api/c++,latex,linux,macos,python,sublimetext,virtualenv,visualstudiocode,windows,pycharm,visualstudio
@@ -430,15 +431,26 @@ fabric.properties
 .idea/sonarlint
 
 ### Python ###
+=======
+# ---> Python
+>>>>>>> 91b57baad05a393307c6a6da8e88f75b488f9bca
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
 
 # C extensions
+<<<<<<< HEAD
 
 # Distribution / packaging
 .Python
+=======
+*.so
+
+# Distribution / packaging
+.Python
+env/
+>>>>>>> 91b57baad05a393307c6a6da8e88f75b488f9bca
 build/
 develop-eggs/
 dist/
@@ -450,6 +462,7 @@ lib64/
 parts/
 sdist/
 var/
+<<<<<<< HEAD
 wheels/
 pip-wheel-metadata/
 share/python-wheels/
@@ -457,6 +470,11 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+=======
+*.egg-info/
+.installed.cfg
+*.egg
+>>>>>>> 91b57baad05a393307c6a6da8e88f75b488f9bca
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -471,21 +489,29 @@ pip-delete-this-directory.txt
 # Unit test / coverage reports
 htmlcov/
 .tox/
+<<<<<<< HEAD
 .nox/
+=======
+>>>>>>> 91b57baad05a393307c6a6da8e88f75b488f9bca
 .coverage
 .coverage.*
 .cache
 nosetests.xml
 coverage.xml
+<<<<<<< HEAD
 *.cover
 .hypothesis/
 .pytest_cache/
+=======
+*,cover
+>>>>>>> 91b57baad05a393307c6a6da8e88f75b488f9bca
 
 # Translations
 *.mo
 *.pot
 
 # Django stuff:
+<<<<<<< HEAD
 local_settings.py
 db.sqlite3
 
@@ -495,6 +521,9 @@ instance/
 
 # Scrapy stuff:
 .scrapy
+=======
+*.log
+>>>>>>> 91b57baad05a393307c6a6da8e88f75b488f9bca
 
 # Sphinx documentation
 docs/_build/
@@ -502,6 +531,7 @@ docs/_build/
 # PyBuilder
 target/
 
+<<<<<<< HEAD
 # Jupyter Notebook
 .ipynb_checkpoints
 
@@ -977,3 +1007,5 @@ MigrationBackup/
 
 # Custom rules (everything added below won't be overriden by 'Generate .gitignore File' if you use 'Update' option)
 
+=======
+>>>>>>> 91b57baad05a393307c6a6da8e88f75b488f9bca
