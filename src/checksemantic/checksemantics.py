@@ -1,6 +1,6 @@
-import cool_ast as ast
+from parsing import cool_ast as ast
 import visitor
-from scope import Scope
+from checksemantic.scope import Scope
 
 ERROR = 0
 

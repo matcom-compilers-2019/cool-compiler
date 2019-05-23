@@ -1,4 +1,4 @@
-import cool_ast
+from parsing import cool_ast
 
 class Scope:
     def __init__(self, parent=None, inside=None):

@@ -1,8 +1,8 @@
 from lark import Lark, Token
-import grammar
-from cool_transformer import ToCoolASTTransformer
-from checksemantics import CheckSemanticsVisitor
-from scope import Scope
+from parsing import grammar, cool_ast
+from parsing.cool_transformer import ToCoolASTTransformer
+from checksemantic.checksemantics import CheckSemanticsVisitor
+from checksemantic.scope import Scope
 
 ###TODO: AVERIGUAR COMO PUEDO HACER PARA CONTROLAR QUE LOS NOMBRES DE LAS VARIABLES NO SEAN RESERVED WORDS
 
