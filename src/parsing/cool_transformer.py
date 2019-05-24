@@ -1,4 +1,4 @@
-from lark import Transformer
+from lark import Transformer, Token
 from parsing.cool_ast import *
 
 class ToCoolASTTransformer(Transformer):
@@ -110,6 +110,9 @@ class ToCoolASTTransformer(Transformer):
 
     def id(self, var):
         return VarNode(var[0])
+    
+    def self(self, var):
+        return VarNode(Token('self', 'self'))
     
     def braces(self, expr):
         return expr

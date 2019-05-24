@@ -133,8 +133,9 @@ class CheckSemanticsVisitor:
         child_scope = scope.create_child_scope()
         rtype = True
         for expr in node.exprs:
-            if not self.visit(expr, child_scope, errors):
-                rtype = False
+            rtype = self.visit(expr, child_scope, errors)
+            if not rtype:
+                return ERROR
         return rtype
 
     @visitor.when(ast.AssignationNode)
@@ -214,6 +215,10 @@ class CheckSemanticsVisitor:
         if len(node.params) != len(method.params):
             errors.append('Method "%s" receives %d parameters, %d was given at line %d, column %d.'%(method.name.value, len(method.params), len(node.params), node.method_name.line, node.method_name.column))
             return False
+        
+        if len(node.params) == 0:
+            return True
+       
         result = True
         for i in range(len(node.params)):
             arg_t = self.visit(node.params[i], scope, errors)
@@ -223,7 +228,7 @@ class CheckSemanticsVisitor:
             if arg_t != 'Void' and not scope.inherits(arg_t, param_t, 0):
                 errors.append('Parameter %s has type %s but %s was given at line %d, column %d.' % (method.params[i].name.value, param_t, arg_t, node.params[i].name.line, node.params[i].name.column))
                 result = False
-        return False
+        return True
         
     @visitor.when(ast.ShortDispatchNode)
     def visit(self, node, scope, errors):
@@ -252,7 +257,7 @@ class CheckSemanticsVisitor:
         t = self.visit(node.expr, scope, errors)
         if not scope.inherits(t, node.parent.value, 0)[0]:
             return ERROR
-        m = scope.get_method(node.parent.value, node.method_name.value)
+        m = scope.look_for_method(node.parent.value, node.method_name.value)
         if not m:
             return ERROR
         if not self.arguments_checker(m, node, scope, errors):

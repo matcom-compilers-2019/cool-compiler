@@ -1,10 +1,8 @@
 from lark import Lark, Token
-from parsing import grammar, cool_ast
+from parsing import grammar, cool_ast, preprocess
 from parsing.cool_transformer import ToCoolASTTransformer
 from checksemantic.checksemantics import CheckSemanticsVisitor
 from checksemantic.scope import Scope
-
-###TODO: AVERIGUAR COMO PUEDO HACER PARA CONTROLAR QUE LOS NOMBRES DE LAS VARIABLES NO SEAN RESERVED WORDS
 
 # program = r"""
 # class Main{
@@ -48,9 +46,9 @@ class Main{
     } 
 };
 """
-parser = Lark(grammar.grammar, start='program')
+parser = Lark(grammar.grammar, start='program', parser='lalr')
 print('PARSER CREATED')
-tree = parser.parse(program)
+tree = parser.parse(preprocess.preprocess_program(program))
 print(tree.pretty())
 ast = ToCoolASTTransformer().transform(tree)
 print('AST CREATED')

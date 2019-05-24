@@ -1,7 +1,5 @@
 from lark import Lark
 
-#TODO: Encontrar la forma de quitar los keywords de los id disponibles y asi poder agregar variables a la produccion 'calc'.
-
 grammar = r"""
     program : class_list
 
@@ -48,8 +46,8 @@ grammar = r"""
     branches : (branch)+
     branch :  CNAME ":" TYPE "="">" expr ";" 
 
-    ?atom : num_atom | boolean_atom | dispatch
-    ?num_atom : SIGNED_NUMBER -> number | CNAME -> id | "("calc")" -> braces | "~"num_atom -> neg | case | block | isvoid 
+    ?atom : num_atom | boolean_atom | dispatch | ID -> id | SELF -> self
+    ?num_atom : SIGNED_NUMBER -> number  | "("calc")" -> braces | "~"num_atom -> neg | case | block | isvoid 
     ?boolean_atom : TRUE -> true | FALSE -> false | NOT expr -> notx
     
     //ID : /^(?!.*("c""l""a""s""s"|"i""f"|"t""h""e""n"|"e""l""s""e"|"f""i"|"c""a""s""e"|"o""f"|"e""s""a""c"|"l""e""t"|"i""n"|"t""r""u""e"|"f""a""l""s""e"|"i""n""h""e""r""i""t""s"|"i""s""v""o""i""d"|"l""o""o""p"|"p""o""o""l"|"w""h""i""l""e"|"n""o""t"|"s""e""l""f"|"n""e""w")).*$/
@@ -73,27 +71,28 @@ grammar = r"""
 
     CLASS_BODY_ID : LCASE_LETTER[CNAME]
     TYPE : UCASE_LETTER[CNAME]
+    ID : (LCASE_LETTER|UCASE_LETTER)[CNAME]
     
-    CLASS : "class"
-    ELSE : "else"
-    FALSE : "false"
-    FI : "fi"
-    IF : "if"
-    IN : "in"
-    INHERITS : "inherits"
-    ISVOID : "isvoid"
-    LET : "let"
-    LOOP : "loop"
-    POOL : "pool"
-    THEN : "then"
-    WHILE : "while"
-    CASE : "case"
-    ESAC : "esac"
-    NEW : "new"
-    OF : "of"
-    NOT : "not"
-    TRUE : "true"
-    SELF :  "self"
+    CLASS : "_____class"
+    ELSE : "_____else"
+    FALSE : "_____false"
+    FI : "_____fi"
+    IF : "_____if"
+    IN : "_____in"
+    INHERITS : "_____inherits"
+    ISVOID : "_____isvoid"
+    LET : "_____let"
+    LOOP : "_____loop"
+    POOL : "_____pool"
+    THEN : "_____then"
+    WHILE : "_____while"
+    CASE : "_____case"
+    ESAC : "_____esac"
+    NEW : "_____new"
+    OF : "_____of"
+    NOT : "_____not"
+    TRUE : "_____true"
+    SELF :  "_____self"
 
     
 
