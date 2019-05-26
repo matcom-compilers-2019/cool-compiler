@@ -49,6 +49,15 @@ class ToCoolASTTransformer(Transformer):
     def leq(self, children):
         l, r = children[0], children[1]
         return LeqNode(l, r)
+    
+    def g(self, children):
+        l, r = children[0], children[1]
+        return GNode(l, r)
+    
+    def ge(self, children):
+        l, r = children[0], children[1]
+        return GENode(l, r)
+    
 
     def plus(self, children):
         l, r = children[0], children[1]

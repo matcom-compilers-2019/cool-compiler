@@ -6,7 +6,7 @@ from checksemantic.scope import Scope
 
 # program = r"""
 # class Main{
-#     main():INT{2+2}
+#     main():Int{2+2}
 # };
 # """
 
@@ -37,9 +37,10 @@ class Main{
         { 
             x : A <- new A;
             x.t();
+            b : Bool <- 4 < x.t();
             y : A <- new B;
             y@A.t();
-            v : Int <- 4 + ~let t : Int <- 5 in t + 5; 
+            v : Int <- 4 + ~let t : Int <- 5 in t + 5;
             case v of s : Int => if true then 5 + 5 else 3 fi; esac; 
             0;
         } 

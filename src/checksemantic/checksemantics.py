@@ -91,8 +91,8 @@ class CheckSemanticsVisitor:
     def visit(self, node, scope, errors):
         rleft = self.visit(node.left, scope, errors)
         rright = self.visit(node.right, scope, errors)
-        if rleft != "Bool" or rright != "Bool":
-            errors.append('Operator error: the operand types do not match. Both operands must be "BOOLEAN"')
+        if rleft != "Int" or rright != "Int":
+            errors.append('Operator error: the operand types do not match. Both operands must be "INTEGER"')
             return ERROR
         return rleft
 
@@ -173,6 +173,8 @@ class CheckSemanticsVisitor:
         rtype = 'Void'
         if node.expr:
             rtype = self.visit(node.expr, scope, errors)
+            if not rtype:
+                errors.append('Declaration failed because the assigned expression is not defined at line %d column %d' % (node.name.line, node.name.column))
 
         t = node.type.value if node.type.value != 'SELF_TYPE' else scope.inside
         if rtype != 'Void' and not scope.inherits(rtype, t, 0):

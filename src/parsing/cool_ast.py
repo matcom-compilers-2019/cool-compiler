@@ -66,6 +66,16 @@ class LeqNode(ComparerNode):
     def __init__(self, left, right):
         super().__init__(left, right)
 
+class GNode(ComparerNode):
+    def __init__(self, left, right):
+        super().__init__(left, right)
+
+class GENode(ComparerNode):
+    def __init__(self, left, right):
+        super().__init__(left, right)
+
+
+
 class SumNode(ArithmeticNode):
     def __init__(self, left, right):
         super().__init__(left, right)
