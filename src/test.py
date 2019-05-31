@@ -11,7 +11,9 @@ from checksemantic.scope import Scope
 # """
 
 program = r"""
+--Class A
 class A{ 
+    --Returns itself
     clone(c : A):SELF_TYPE{
         self
     }
@@ -23,6 +25,7 @@ class A{
     } 
 };
 
+--Class B
 class B inherits A{
     n():Int{
         {
@@ -32,16 +35,18 @@ class B inherits A{
     }
 };
 
+--Entry point
 class Main{ 
     main():Int{ 
         { 
+            ss : String <- "string";
             x : A <- new A;
             x.t();
             b : Bool <- 4 < x.t();
             y : A <- new B;
             y@A.t();
             v : Int <- 4 + ~let t : Int <- 5 in t + 5;
-            case v of s : Int => if true then 5 + 5 else 3 fi; esac; 
+            case v of s : Int => if true then 5 + 5 else "s" fi; esac; 
             0;
         } 
     } 

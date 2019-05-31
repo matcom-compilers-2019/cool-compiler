@@ -1,13 +1,18 @@
 from lark import Lark
 
 #TODO: Do something about lalr thing
+#TODO: Multiline comments!!!
+
 grammar = r"""
     program : class_list
 
     class_list : (cls)+
+
     ?cls : simple_cls | descendant_cls
-    descendant_cls : CLASS TYPE INHERITS TYPE "{" class_body "}"";"
+    
+    descendant_cls : CLASS TYPE INHERITS TYPE "{" class_body "}"";"   
     simple_cls : CLASS TYPE "{" class_body "}"";"
+    
     ?class_body : feature_list
 
     feature_list : feature*
@@ -20,7 +25,8 @@ grammar = r"""
     decl_param : CNAME ":" TYPE
 
     assignment : CNAME "<""-" expr//
-    ?expr : | decl 
+    
+    ?expr :   decl 
             | assignment 
             | new 
             | string
@@ -33,37 +39,52 @@ grammar = r"""
             | ar ">""=" arithmetic -> ge
             | calc_atom
     
-    ?calc_atom :  "("calc")"
+    ?calc_atom :    "("calc")"
                   | arithmetic
                   | atom
 
 
     ?arithmetic : ar | larithm
 
-    ?ar : ar "+" term -> plus | ar "-" term -> minus | term
-    ?term : term "*" num_atom -> times| term "/" num_atom -> div | num_atom
-
-    ?larithm :  ar "+" latom -> lplus | ar "-" latom -> lminus | lterm
-    ?lterm : term "*" latom -> ltimes | term "/" latom -> ldiv | latom
-    ?latom : let | "~"latom -> neglet
+    ?larithm :  ar "+" lterm -> lplus 
+        | ar "-" lterm -> lminus 
+        | lterm
     
-    conditional : IF calc THEN calc ELSE calc FI//
+    ?lterm : term "*" latom -> ltimes 
+        | term "/" latom -> ldiv 
+        | latom
+    
+    ?latom : "~"latom -> neglet
+        | 
+
+    ?ar : ar "+" term -> plus 
+        | ar "-" term -> minus 
+        | term
+    
+    ?term : term "*" factor -> times
+        | term "/" factor -> div 
+        | factor
+    
+    ?factor: "~"factor -> neg 
+        | num_atom
+    
+    conditional : IF calc THEN expr ELSE expr FI//
 
     loop : WHILE calc LOOP expr POOL//
     
-    case : CASE calc OF branches ESAC//
+    case : CASE expr OF branches ESAC//
     branches : (branch)+
     branch :  CNAME ":" TYPE "="">" expr ";" //
 
     ?atom : boolean_atom  | loop  | SELF -> self 
-    ?num_atom : SIGNED_NUMBER -> number | "~"num_atom -> neg | ID -> id | "("arithmetic")" -> braces | dispatch | case | conditional | block 
+    ?num_atom : SIGNED_NUMBER -> number | ID -> id | "("arithmetic")" -> braces | dispatch | case | conditional | block 
     ?boolean_atom : TRUE -> true | FALSE -> false | NOT calc -> notx | isvoid
     
     isvoid : ISVOID expr
     ?new : NEW TYPE
     block : "{" (expr";")+ "}"
     
-    let : LET decl_list IN arithmetic
+    let : LET decl_list IN expr
     decl_list : decl("," decl)*
     decl : CNAME ":" TYPE ["<""-" expr]
 
@@ -72,7 +93,7 @@ grammar = r"""
     short_dispatch : CNAME func_params
     parent_dispatch : calc_atom"@"TYPE"."CNAME func_params
 
-    func_params : "(" expr? (","expr)* ")"
+    func_params : "(" [expr(","expr)*] ")"
 
     string : ESCAPED_STRING
 
@@ -80,26 +101,26 @@ grammar = r"""
     TYPE : UCASE_LETTER[CNAME]
     ID : (LCASE_LETTER|UCASE_LETTER)[CNAME]
     
-    CLASS : "_____class"
-    ELSE : "_____else"
-    FALSE : "_____false"
-    FI : "_____fi"
-    IF : "_____if"
-    IN : "_____in"
-    INHERITS : "_____inherits"
-    ISVOID : "_____isvoid"
-    LET : "_____let"
-    LOOP : "_____loop"
-    POOL : "_____pool"
-    THEN : "_____then"
-    WHILE : "_____while"
-    CASE : "_____case"
-    ESAC : "_____esac"
-    NEW : "_____new"
-    OF : "_____of"
-    NOT : "_____not"
-    TRUE : "_____true"
-    SELF :  "_____self"
+    CLASS : "$$$class"
+    ELSE : "$$$else"
+    FALSE : "$$$false"
+    FI : "$$$fi"
+    IF : "$$$if"
+    IN : "$$$in"
+    INHERITS : "$$$inherits"
+    ISVOID : "$$$isvoid"
+    LET : "$$$let"
+    LOOP : "$$$loop"
+    POOL : "$$$pool"
+    THEN : "$$$then"
+    WHILE : "$$$while"
+    CASE : "$$$case"
+    ESAC : "$$$esac"
+    NEW : "$$$new"
+    OF : "$$$of"
+    NOT : "$$$not"
+    TRUE : "$$$true"
+    SELF :  "$$$self"
 
     
 
@@ -112,7 +133,3 @@ grammar = r"""
     %ignore WS
     
 """
-
-keywords = [
-    
-]

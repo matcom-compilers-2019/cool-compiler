@@ -1,3 +1,6 @@
+
+#TODO: Averiguar bien lo de los comentarios multilineas
+
 keywords = [
     "class",
     "else",
@@ -33,15 +36,27 @@ def next_word(program, idx):
     return word, i
 
 def add__(keyword):
-    return "_____"+keyword
+    return "$$$"+keyword
 
 def preprocess_program(program):
+    """
+    Points the keywords and remove single line comments.
+    """
     i = 0
     new_program = ""
     while i < len(program):
         word, i = next_word(program, i)
         if word in keywords:
             new_program += add__(word)
+        #Remove single line comments
+        elif word == '-':
+            w, i2 = next_word(program, i)
+            if w == '-':
+                while w != '\n' and i2 < len(program):
+                    w, i2 = next_word(program, i2)
+                i = i2
+            else:
+                new_program += word
         else:
             new_program += word
     return new_program
