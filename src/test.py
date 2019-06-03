@@ -4,6 +4,7 @@ from parsing.cool_transformer import ToCoolASTTransformer
 from checksemantic.checksemantics import CheckSemanticsVisitor
 from checksemantic.scope import Scope
 
+
 # program = r"""
 # class Main{
 #     main():Int{2+2}
