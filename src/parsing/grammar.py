@@ -19,7 +19,7 @@ grammar = r"""
     
     attr : CLASS_BODY_ID ":" TYPE ["<""-"expr]";"//
     
-    method : CLASS_BODY_ID "("decl_params")" ":" TYPE "{" expr "}"//
+    method : CLASS_BODY_ID "("decl_params")" ":" TYPE "{" expr "};"//
     decl_params : (decl_param)?("," decl_param)*
     decl_param : CNAME ":" TYPE
 
@@ -28,18 +28,18 @@ grammar = r"""
     ?expr :   decl 
             | assignment 
             | new 
-            | string
             | calc
 
-    ?calc :   ar "<" arithmetic -> less 
-            | ar "=" arithmetic -> eq 
-            | ar "<""=" arithmetic -> leq
-            | ar ">" arithmetic -> g
-            | ar ">""=" arithmetic -> ge
+    ?calc :   expr "<" expr -> less 
+            | expr "=" expr -> eq 
+            | expr "<""=" expr -> leq
+            | expr ">" expr -> g
+            | expr ">""=" expr -> ge
             | calc_atom
     
-    ?calc_atom :    "("calc")"
+    ?calc_atom :    "("expr")"
                   | arithmetic
+                  | string
                   | atom
 
 
@@ -67,15 +67,15 @@ grammar = r"""
     ?factor: "~"factor -> neg 
         | num_atom
     
-    conditional : IF calc THEN expr ELSE expr FI//
+    conditional : IF expr THEN expr ELSE expr FI//
 
     loop : WHILE calc LOOP expr POOL//
     
     case : CASE expr OF branches ESAC//
     branches : (branch)+
-    branch :  CNAME ":" TYPE "="">" expr ";" //
+    branch :  ID ":" TYPE "="">" expr ";" //
 
-    ?atom : boolean_atom  | loop  | SELF -> self 
+    ?atom : boolean_atom  | loop  | SELF -> self
     ?num_atom : SIGNED_NUMBER -> number | ID -> id | "("arithmetic")" -> braces | dispatch | case | conditional | block 
     ?boolean_atom : TRUE -> true | FALSE -> false | NOT calc -> notx | isvoid
     
@@ -89,16 +89,16 @@ grammar = r"""
 
     ?dispatch : point_dispatch | short_dispatch | parent_dispatch
     point_dispatch : calc_atom"."CNAME func_params
-    short_dispatch : CNAME func_params
+    short_dispatch : CLASS_BODY_ID func_params
     parent_dispatch : calc_atom"@"TYPE"."CNAME func_params
 
     func_params : "(" [expr(","expr)*] ")"
 
     string : ESCAPED_STRING
 
-    CLASS_BODY_ID : LCASE_LETTER[CNAME]
-    TYPE : UCASE_LETTER[CNAME]
-    ID : (LCASE_LETTER|UCASE_LETTER)[CNAME]
+    CLASS_BODY_ID : LCASE_LETTER(LETTER|DIGIT|"_")*
+    TYPE : UCASE_LETTER(CNAME|DIGIT|"_")*
+    ID : (LETTER)(LETTER|DIGIT|"_")*
     
     CLASS : "$$$class"
     ELSE : "$$$else"
@@ -127,7 +127,9 @@ grammar = r"""
     %import common.CNAME
     %import common.LCASE_LETTER
     %import common.UCASE_LETTER
+    %import common.LETTER
     %import common.SIGNED_NUMBER
+    %import common.DIGIT
     %import common.WS
     %ignore WS
     

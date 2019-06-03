@@ -25,7 +25,7 @@ keywords = [
 def next_word(program, idx):
     i = idx
     word = ""
-    while i < len(program) and not program[i] in [':',';',',','(',')','{','}','[',']','@','<','>','=','-','+',' ','*','/', '\n','~']:
+    while i < len(program) and not program[i] in [':',';',',','(',')','{','}','[',']','@','<','>','=','-','+',' ','*','/', '\n','\t','~']:
         word += program[i]
         i += 1
     if word == "" and i < len(program):

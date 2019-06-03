@@ -1,3 +1,7 @@
+
+# import sys
+# sys.path.append('/..')
+
 from parsing import cool_ast as ast
 import visitor
 from checksemantic.scope import Scope
@@ -91,16 +95,16 @@ class CheckSemanticsVisitor:
     def visit(self, node, scope, errors):
         rleft = self.visit(node.left, scope, errors)
         rright = self.visit(node.right, scope, errors)
-        if rleft != "Int" or rright != "Int":
-            errors.append('Operator error: the operand types do not match. Both operands must be "INTEGER"')
+        if rleft != rright:
+            errors.append('Operator error: the operand types do not match')
             return ERROR
-        return rleft
+        return 'Bool'
 
     @visitor.when(ast.ArithmeticNode)
     def visit(self, node, scope, errors):
         rleft = self.visit(node.left, scope, errors)
         rright = self.visit(node.right, scope, errors)
-        if rleft != rright or rleft != "Int" or rright != "Int":
+        if rleft != "Int" or rright != "Int":
             errors.append('Operator error: the operand types do not match. Both operands must be "INTEGER"')
             return ERROR
         return rleft
@@ -144,7 +148,7 @@ class CheckSemanticsVisitor:
         if not scope.is_defined(node.name.value):
             errors.append('Variable "%s" not defined at line %d column %d.' % (node.name.value, node.name.line, node.name.column))
             return ERROR
-        if rtype != 'Void' or not scope.inherits(rtype, scope.get_type(node.name.value), 0):
+        if rtype != 'Void' and not scope.inherits(rtype, scope.get_type(node.name.value), 0):
             errors.append('Assignation failed due to the type of the variable  "%s" and the type of the assigned expression do not match at line %d column %d' % (node.name.value, node.name.line, node.name.column))
             return ERROR
         return scope.get_type(node.name.value)
@@ -198,6 +202,9 @@ class CheckSemanticsVisitor:
     @visitor.when(ast.LoopNode)
     def visit(self, node, scope, errors):
         cvisit = self.visit(node.condition, scope, errors)
+        if not scope.inherits(cvisit, 'Bool', 0)[0]:
+            errors.append('The condition in while loop must be "BOOLEAN".')
+            return ERROR
         child_scope = scope.create_child_scope()
         result = self.visit(node.body, child_scope, errors)
         return ERROR if not cvisit or not result else 'Void'
@@ -205,6 +212,10 @@ class CheckSemanticsVisitor:
     @visitor.when(ast.ConditionalNode)
     def visit(self, node, scope, errors):
         _if = self.visit(node.if_part, scope, errors)
+        
+        if not scope.inherits(_if,'Bool',0)[0]:
+            errors.append('IF expression must be "BOOLEAN".')
+        
         child_scope = scope.create_child_scope()
         _then = self.visit(node.then_part, child_scope, errors)
         child_scope = scope.create_child_scope()

@@ -1,4 +1,5 @@
 from parsing import cool_ast
+from lark import Token
 
 class Scope:
     def __init__(self, parent=None, inside=None):
@@ -13,17 +14,27 @@ class Scope:
             self.basic_types()
 
     def basic_types(self):
-        self.types.append(('Object', None, []))
+        object_methods = [
+            cool_ast.MethodNode(Token(None,'abort'), [], Token(None,'Object'), None),
+            cool_ast.MethodNode(Token(None,'type_name',), [], Token(None,'String'), None),
+            cool_ast.MethodNode(Token(None,'copy'), [], Token(None,'SELF_TYPE'), None)
+        ]
+        string_methods = [
+            cool_ast.MethodNode(Token(None,'length'), [], Token(None,'Int'), None),
+            cool_ast.MethodNode(Token(None,'concat'), [cool_ast.ParamNode(Token(None,'s'),Token(None,'String'))], Token(None,'String'), None),
+            cool_ast.MethodNode(Token(None,'substr'), [cool_ast.ParamNode(Token(None,'i'),Token(None,'Int')), cool_ast.ParamNode(Token(None,'l'),Token(None,'Int'))], Token(None,'String'), None)
+        ]
+        io_methods = [
+            cool_ast.MethodNode(Token(None,'out_string'),[cool_ast.ParamNode(Token(None,'x'),Token(None,'String'))],Token(None,'SELF_TYPE'),None),
+            cool_ast.MethodNode(Token(None,'out_int'), [cool_ast.ParamNode(Token(None,'x'),Token(None,'Int'))], Token(None,'SELF_TYPE'),None),
+            cool_ast.MethodNode(Token(None, 'in_string'), [], Token(None,'String'), None),
+            cool_ast.MethodNode(Token(None, 'in_int',), [], Token(None,'Int'), None)
+        ]
+        self.types.append(('Object', None, object_methods))
         self.types.append(('Int', 'Object', []))
         self.types.append(('Void', 'Object', []))
         self.types.append(('Bool', 'Object', []))
-        self.types.append(('String', 'Object', []))
-        io_methods = [
-            cool_ast.MethodNode('out_string',[cool_ast.ParamNode('x','String')],'SELF_TYPE',None),
-            cool_ast.MethodNode('out_int', [cool_ast.ParamNode('x','Int')], 'SELF_TYPE',None),
-            cool_ast.MethodNode('in_string', [], 'String', None),
-            cool_ast.MethodNode('in_int', [], 'Int', None)
-        ]
+        self.types.append(('String', 'Object', string_methods))
         self.types.append(('IO', 'Object', io_methods))
 
     def add_type(self, type_name, methods, parent = 'Object'):
@@ -96,13 +107,13 @@ class Scope:
             return True
         current = self
         while current:
-            if vname in [v for v in self.locals.keys()]:
+            if vname in [v for v in current.locals.keys()]:
                 return True
             current = current.parent
         return False
 
     def is_local(self, vname):
-        return vname in self.locals.keys()
+        return  vname in [v for v in self.locals.keys()]
 
     def is_local_feature(self, mname):
         return mname in [m.name.value for m in self.methods]
@@ -116,7 +127,7 @@ class Scope:
                         if m.name.value == mname:
                             return m
                     if _type[1]:
-                        return self.is_defined_in_type(_type[1], mname)        
+                        return curr.is_defined_in_type(_type[1], mname)        
             curr = curr.parent
         return False
     

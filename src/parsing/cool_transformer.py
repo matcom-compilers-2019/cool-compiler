@@ -124,7 +124,7 @@ class ToCoolASTTransformer(Transformer):
         return VarNode(Token('self', 'self'))
     
     def braces(self, expr):
-        return expr
+        return expr[0]
     
     def neg(self, expr):
         return OpositeNode(expr[0])
@@ -172,7 +172,7 @@ class ToCoolASTTransformer(Transformer):
         return ConditionalNode(if_part, then_part, else_part)
     
     def loop(self, children):
-        cond, expr = children[0], children[1]
+        cond, expr = children[1], children[3]
         return LoopNode(cond, expr)
     
     def void(self, child):
