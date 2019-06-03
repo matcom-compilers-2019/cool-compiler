@@ -1,4 +1,4 @@
-from lark import Transformer
+from lark import Transformer, Token
 from parsing.cool_ast import *
 
 class ToCoolASTTransformer(Transformer):
@@ -49,6 +49,15 @@ class ToCoolASTTransformer(Transformer):
     def leq(self, children):
         l, r = children[0], children[1]
         return LeqNode(l, r)
+    
+    def g(self, children):
+        l, r = children[0], children[1]
+        return GNode(l, r)
+    
+    def ge(self, children):
+        l, r = children[0], children[1]
+        return GENode(l, r)
+    
 
     def plus(self, children):
         l, r = children[0], children[1]
@@ -110,6 +119,9 @@ class ToCoolASTTransformer(Transformer):
 
     def id(self, var):
         return VarNode(var[0])
+    
+    def self(self, var):
+        return VarNode(Token('self', 'self'))
     
     def braces(self, expr):
         return expr
