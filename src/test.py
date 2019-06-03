@@ -25,7 +25,10 @@ class A{
         m(3,true)
     } 
 };
+(*Let's test the multiline comments
+A ver q pasa.
 
+*)
 --Class B
 class B inherits A{
     n():Int{
@@ -53,9 +56,14 @@ class Main{
     } 
 };
 """
-parser = Lark(grammar.grammar, start='program', parser='lalr')
+parser = Lark(grammar.grammar, start='program')
 print('PARSER CREATED')
-tree = parser.parse(preprocess.preprocess_program(program))
+
+preprocessed = preprocess.preprocess_program(program)
+print('KEYWORDS POINTED AND COMMENTS ERASED')
+print(preprocessed)
+
+tree = parser.parse(preprocessed)
 print(tree.pretty())
 ast = ToCoolASTTransformer().transform(tree)
 print('AST CREATED')

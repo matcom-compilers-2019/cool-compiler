@@ -1,7 +1,6 @@
 from lark import Lark
 
 #TODO: Do something about lalr thing
-#TODO: Multiline comments!!!
 
 grammar = r"""
     program : class_list
@@ -55,7 +54,7 @@ grammar = r"""
         | latom
     
     ?latom : "~"latom -> neglet
-        | 
+        | let
 
     ?ar : ar "+" term -> plus 
         | ar "-" term -> minus 

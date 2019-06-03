@@ -1,6 +1,4 @@
 
-#TODO: Averiguar bien lo de los comentarios multilineas
-
 keywords = [
     "class",
     "else",
@@ -27,7 +25,7 @@ keywords = [
 def next_word(program, idx):
     i = idx
     word = ""
-    while i < len(program) and not program[i] in [':',';',',','(',')','{','}','[',']','@','<','>','=','-','+',' ', '\n','~']:
+    while i < len(program) and not program[i] in [':',';',',','(',')','{','}','[',']','@','<','>','=','-','+',' ','*','/', '\n','~']:
         word += program[i]
         i += 1
     if word == "" and i < len(program):
@@ -54,6 +52,18 @@ def preprocess_program(program):
             if w == '-':
                 while w != '\n' and i2 < len(program):
                     w, i2 = next_word(program, i2)
+                i = i2
+            else:
+                new_program += word
+        elif word == '(':
+            w, i2 = next_word(program, i)
+            if w == '*':
+                while i2 < len(program):
+                    w, i2 = next_word(program, i2)
+                    if w == '*':
+                        w, i2 = next_word(program, i2)
+                        if w == ')':
+                            break
                 i = i2
             else:
                 new_program += word
