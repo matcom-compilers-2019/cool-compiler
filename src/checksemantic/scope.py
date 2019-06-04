@@ -38,27 +38,34 @@ class Scope:
         self.types.append(('IO', 'Object', io_methods,[]))
 
     def add_type(self, type_name, methods, attrs, parent = 'Object'):
-        if not self.check_type(type_name) and self.check_type(parent):
+        if not self.check_type(type_name):
             self.types.append((type_name, parent, [],[]))
-            for m in methods:
-                if not self.define_method(type_name, m):
-                    return False
-            for a in attrs:
-                if not self.define_attr(type_name, a):
-                    return False
             return True
         return False
     
     def define_method(self, type_name, method):
         curr = self.look_for_type(type_name)
         for tp in curr.types:
-            if tp[0] == type_name and not curr.look_for_method(type_name, method.name) and not self.is_defined(method.name):
+            if tp[0] == type_name and not self.is_defined(method.name):
+                prev_m = curr.look_for_method(type_name, method.name)
+                if prev_m != False and not self.check_methods(prev_m.params, method.params, prev_m.return_type.value, method.return_type.value) :
+                    return False
                 tp[2].append(method)
                 if method.return_type == 'SELF_TYPE':
                     self.self_type.append(method.name)
                 return True
         return False
-    
+
+    def check_methods(self, params1, params2, rt1, rt2):
+        if len(params1) != len(params2):
+            return False
+        if rt1 != rt2:
+            return False
+        for i in range(len(params1)):
+            if params1[i].type.value != params2[i].type.value:
+                return False
+        return True
+
     def define_attr(self, type_name, attr):
         curr = self.look_for_type(type_name)
         for tp in curr.types:
@@ -230,7 +237,7 @@ class Scope:
         p = [t[1] for t in curr.types if t[0] == t1]
         if not p:
             return False, -1
-        return curr.inherits(p[0], t2, level + 1), level + 1        
+        return curr.inherits(p[0], t2, level + 1)      
 
     def join(self, t1, t2):
         if t1 == 'SELF_TYPE':

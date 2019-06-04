@@ -21,10 +21,16 @@ class CheckSemanticsVisitor:
     def visit(self, node, scope, errors):
         result = True
         for c in node.classes:
-            if c.parent:
-                scope.add_type(c.name.value, [m for m in c.features if isinstance(m, ast.MethodNode)], [m for m in c.features if isinstance(m, ast.AttributeNode)],parent=c.parent.value)
-            else:
-                scope.add_type(c.name.value, [m for m in c.features if isinstance(m, ast.MethodNode)], [m for m in c.features if isinstance(m, ast.AttributeNode)])
+            methods = [m for m in c.features if isinstance(m, ast.MethodNode)]
+            attrs = [m for m in c.features if isinstance(m, ast.AttributeNode)]
+            p = 'Object' if not c.parent else c.parent.value
+            scope.add_type(c.name.value, [], [], parent=p)
+            for m in methods:
+                if not scope.define_method(c.name.value, m):
+                    return False
+            for a in attrs:
+                if not scope.define_attr(c.name.value, a):
+                    return False
         for c in node.classes:
             child_scope = scope.create_child_scope(inside=c.name.value)
             if not self.visit(c, child_scope, errors):
@@ -34,6 +40,8 @@ class CheckSemanticsVisitor:
     @visitor.when(ast.ClassNode)
     def visit(self, node, scope, errors):
         result = True
+        if node.parent and not scope.check_type(node.parent.value):
+            errors.append('Type %s is not defined at line %d, column %d' %(node.parent.value, node.parent.line, node.parent.column))
         for f in node.features:
             if not self.visit(f, scope, errors):
                 result = False
