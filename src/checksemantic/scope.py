@@ -37,6 +37,15 @@ class Scope:
         self.types.append(('String', 'Object', string_methods,[]))
         self.types.append(('IO', 'Object', io_methods,[]))
 
+        self.create_child_scope(inside='Object')
+        self.create_child_scope(inside='Int')
+        self.create_child_scope(inside='Bool')
+        self.create_child_scope(inside='String')
+        self.create_child_scope(inside='IO')
+
+    def true_type(self, t):
+        return t if t != 'SELF_TYPE' else self.inside
+
     def add_type(self, type_name, methods, attrs, parent = 'Object'):
         if not self.check_type(type_name):
             self.types.append((type_name, parent, [],[]))
@@ -44,9 +53,9 @@ class Scope:
         return False
     
     def define_method(self, type_name, method):
-        curr = self.look_for_type(type_name)
+        curr = self.root()
         for tp in curr.types:
-            if tp[0] == type_name and not self.is_defined(method.name):
+            if tp[0] == type_name and not curr.is_defined_in_class(type_name, method.name.value):
                 prev_m = curr.look_for_method(type_name, method.name)
                 if prev_m != False and not self.check_methods(prev_m.params, method.params, prev_m.return_type.value, method.return_type.value) :
                     return False
@@ -67,9 +76,9 @@ class Scope:
         return True
 
     def define_attr(self, type_name, attr):
-        curr = self.look_for_type(type_name)
+        curr = self.root()
         for tp in curr.types:
-            if tp[0] == type_name and not curr.look_for_attr(type_name, attr.name) and not self.is_defined(attr.name):
+            if tp[0] == type_name and not curr.look_for_attr(type_name, attr.name.value) and not self.is_defined(attr.name.value):
                 tp[3].append(attr)
                 return True
         return False
@@ -115,6 +124,16 @@ class Scope:
                 self.self_type.append(vname)
             return True
         return False
+    
+    def define_for_let(self, vname, vtype):
+        self.locals[vname] = vtype
+        return True
+    
+    def define_param(self, vname, vtype):
+        if self.check_type(vtype):
+            self.locals[vname] = vtype
+            return True
+        return False
 
     def create_child_scope(self, inside=None):
         child_scope = Scope(self, inside=self.inside) if not inside else Scope(self, inside)
@@ -129,17 +148,19 @@ class Scope:
             if vname in [v for v in current.locals.keys()]:
                 return True
             current = current.parent
-        return self.search_attr(vname)
+        return self.search_attr(self.inside, vname)
     
-    def search_attr(self, aname):
-        curr = self
-        while curr:
-            for t in curr.types:
-                for attr in t[3]:
-                    if attr.name.value == aname:
-                        return True
-            curr = curr.parent
-        return False
+    def search_attr(self, tp, aname):
+        curr = self.root()
+        aux = None
+        for t in curr.types:
+            if t[0] != tp:
+                continue
+            aux = t
+            for attr in t[3]:
+                if attr.name.value == aname:
+                    return True
+        return False if not aux or not aux[1] else self.search_attr(aux[1], aname)
     
     def get_attr_type(self, aname):
         curr = self
@@ -158,15 +179,25 @@ class Scope:
         return mname in [m.name.value for m in self.methods]
     
     def is_defined_in_type(self, t, mname):
+        curr = self.root()
+        for _type in curr.types:
+            if _type[0] == t:
+                for m in _type[2]:
+                    if m.name.value == mname:
+                        return m
+                if _type[1]:
+                    return curr.is_defined_in_type(_type[1], mname)        
+        return False
+    
+    def is_defined_in_class(self, cls, mname):
         curr = self
         while curr:
             for _type in curr.types:
-                if _type[0] == t:
+                if _type[0] == cls:
                     for m in _type[2]:
                         if m.name.value == mname:
                             return m
-                    if _type[1]:
-                        return curr.is_defined_in_type(_type[1], mname)        
+                    return False        
             curr = curr.parent
         return False
     
@@ -220,15 +251,15 @@ class Scope:
             currt = tp[1]
         return False
      
-    def look_for_type(self, t):
+    def root(self):
         curr = self
-        while curr and not curr.local_type(t):
+        while curr.parent:
             curr = curr.parent
         return curr
 
     def inherits(self, t1, t2, level):
         
-        curr = self.look_for_type(t1)
+        curr = self.root()
 
         if not curr:
             return False, -1
@@ -249,9 +280,11 @@ class Scope:
             return t2
         if self.inherits(t2, t1,0)[0]:
             return t1
-        curr = self.look_for_type(t1)
+        curr = self.root()
         p = [t[1] for t in curr.types if t[0] == t1][0]
         return self.join(p, t2)
                 
-
-
+    def get_scope_of_type(self, t):
+        r = self.root()
+        f = [s for s in r.children if s.inside == t]
+        return f if f == [] else f[0]

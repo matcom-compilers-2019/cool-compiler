@@ -130,7 +130,7 @@ class ToCoolASTTransformer(Transformer):
         return OpositeNode(expr[0])
     
     def notx(self, expr):
-        return NotNode(expr[0])
+        return NotNode(expr[1])
     
     def case(self, children):
         expr, branches = children[1], children[3]
@@ -141,7 +141,7 @@ class ToCoolASTTransformer(Transformer):
     
     def branch(self, children):
         name, t, expr = children[0], children[1], children[2]
-        return DeclarationNode(name, t, expr)
+        return BranchNode(name, t, expr)
     
     def block(self, exprs):
         return BlockNode(exprs)

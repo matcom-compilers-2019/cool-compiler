@@ -26,10 +26,10 @@ grammar = r"""
     assignment : CNAME "<-" expr//
     
     ?expr :   decl 
-            | assignment 
             | new 
             | calc
             | atom
+            | assignment
 
 
     ?calc :   calc "<" calc -> less 
@@ -48,7 +48,7 @@ grammar = r"""
                 | SELF -> self
 
 
-    ?arithmetic : ar | larithm
+    ?arithmetic : ar | larithm | assignment 
 
     ?larithm :  ar "+" lterm -> lplus 
         | ar "-" lterm -> lminus 

@@ -128,6 +128,12 @@ class CaseNode(AtomicNode):
         self.main_expr = main_expr
         self.branches = branches
 
+class BranchNode:
+    def __init__(self, id, t, expr):
+        self.id = id
+        self.type = t
+        self.expr = expr
+
 class DeclarationNode:
     def __init__(self, name, t, expr):
         self.name = name
