@@ -48,23 +48,26 @@ class CheckSemanticsVisitor:
             errors.append('Type %s is not defined at line %d, column %d' %(node.parent.value, node.parent.line, node.parent.column))
         for f in node.features:
             if not self.visit(f, scope, errors):
-                errors.append('Error in feature %s at line %d, column %d' % (f.name.value, f.name.line, f.name.column))
+                errors.append('Error in feature "%s" at line %d, column %d' % (f.name.value, f.name.line, f.name.column))
                 result = False
         return result
     
     @visitor.when(ast.AttributeNode)
     def visit(self, node, scope, errors):
-        val_t = 'Void'
+        val_t = scope.true_type(node.type.value)
+        if not scope.check_type(val_t):
+            errors.append("Can't define attribute '%s' because '%s' doesn't exists at line %d, column %d"%(node.name.value, node.type.value, node.name.line, node.name.column))
+            return ERROR
+        t = None
         if node.value:
-            val_t = self.visit(node.value, scope, errors)
-        if val_t:
-            t = scope.true_type(node.type.value)
-            if not (scope.inherits(val_t,t,0)[0]) and val_t != 'Void':
+            t = self.visit(node.value, scope, errors)
+        if t:
+            val_t = scope.true_type(val_t)
+            if not (scope.inherits(t,val_t,0)[0]):
                 errors.append('Attribute declaration failed because the types do not match at line %d column %d' % (node.type.line, node.type.column))
                 return ERROR
-            t = val_t if val_t == 'Void' else node.type.value
-            return t
-        return ERROR
+            return val_t
+        return val_t
     
     @visitor.when(ast.MethodNode)
     def visit(self, node, scope, errors):
@@ -186,14 +189,19 @@ class CheckSemanticsVisitor:
 
     @visitor.when(ast.DeclarationNode)
     def visit(self, node, scope, errors, let=False):
-        rtype = 'Void'
+        rtype = node.type.value
+
+        if not scope.check_type(rtype):
+            errors.append("Declaration of '%s' failed because '%s' doesn't exist at line %d, column %d" % (node.name.value, node.type.value, node.name.line, node.name.column))
+            return ERROR
+        t = None
         if node.expr:
-            rtype = self.visit(node.expr, scope, errors)
-            if not rtype:
+            t = self.visit(node.expr, scope, errors)
+            if not t:
                 errors.append('Declaration failed because the assigned expression is not defined at line %d column %d' % (node.name.line, node.name.column))
 
         t = scope.true_type(node.type.value)
-        if rtype != 'Void' and not scope.inherits(rtype, t, 0):
+        if not scope.inherits(t, rtype, 0):
             errors.append('Declaration failed because the type of the variable and the type of the expression do not match at line %d column %d' % (node.name.line, node.name.column))
             return ERROR
         
@@ -205,7 +213,7 @@ class CheckSemanticsVisitor:
             return ERROR
         
         scope.define_variable(node.name.value, t) if rtype != 'Void' else scope.define_variable(node.name.value, 'Void')
-        return t if rtype != 'Void' or t == 'Int' else 'Void'
+        return rtype
     
     @visitor.when(ast.NewNode)
     def visit(self, node, scope, errors):

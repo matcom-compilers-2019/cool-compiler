@@ -42,6 +42,7 @@ class Scope:
         self.create_child_scope(inside='Bool')
         self.create_child_scope(inside='String')
         self.create_child_scope(inside='IO')
+        self.create_child_scope(inside='Void')
 
     def true_type(self, t):
         return t if t != 'SELF_TYPE' else self.inside
@@ -96,7 +97,7 @@ class Scope:
             if curr.is_local(vname):
                 return curr.locals[vname]
             curr = curr.parent
-        return self.get_attr_type(vname)
+        return self.get_attr_type(self.inside, vname)
     
     def local_type(self, type_name):
         for t in self.types:
@@ -162,15 +163,21 @@ class Scope:
                     return True
         return False if not aux or not aux[1] else self.search_attr(aux[1], aname)
     
-    def get_attr_type(self, aname):
+    def get_attr_type(self, tp, aname):
+        if not tp:
+            return False
         curr = self
+        parent = None
         while curr:
             for t in curr.types:
+                if tp != t[0]:
+                    continue
+                parent = t[1]
                 for attr in t[3]:
                     if attr.name.value == aname:
                         return attr.type.value
             curr = curr.parent
-        return False
+        return self.get_attr_type(parent, aname)
 
     def is_local(self, vname):
         return  vname in [v for v in self.locals.keys()]

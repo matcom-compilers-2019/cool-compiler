@@ -28,15 +28,14 @@ grammar = r"""
     ?expr :   decl 
             | new 
             | calc
-            | atom
+            | boolean_atom
             | assignment
 
-
-    ?calc :   calc "<" calc -> less 
-            | calc "=" calc -> eq 
-            | calc "<=" calc -> leq
-            | calc ">" calc -> g
-            | calc ">=" calc -> ge
+    ?calc :   calc "<" calc_atom -> less 
+            | calc "=" calc_atom -> eq 
+            | calc "<=" calc_atom -> leq
+            | calc ">" calc_atom -> g
+            | calc ">=" calc_atom -> ge
             | calc_atom
     
     ?calc_atom :    dispatchable
@@ -45,6 +44,7 @@ grammar = r"""
     ?dispatchable: string
                 | ar
                 | "("expr")"
+                | loop
                 | SELF -> self
 
 
@@ -80,7 +80,6 @@ grammar = r"""
     branches : (branch)+
     branch :  ID ":" TYPE "=>" expr ";" //
 
-    ?atom : boolean_atom  | loop
     ?num_atom : SIGNED_NUMBER -> number | ID -> id | "("arithmetic")" -> braces | dispatch | case | conditional | block 
     ?boolean_atom : TRUE -> true | FALSE -> false | NOT expr -> notx | isvoid
     

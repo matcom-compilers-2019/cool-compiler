@@ -4,9 +4,11 @@ from parsing.cool_transformer import ToCoolASTTransformer
 from checksemantic.checksemantics import CheckSemanticsVisitor
 from checksemantic.scope import Scope
 
-#TODO: Find all the errors in this test, or move on and try to figure out what is wrong using another test.
-#TODO: A parameter hides the definition of an attribute
-
+#TODO: Override when the base method has SELF_TYPE as the return type (override-basic.cl)
+#TODO: (new Int) + 1 is allowed?? (newbasic.cl)
+#TODO: nested-arith.cl exceeds the recursion depth limit of lark
+#TODO: I think "new C.f()" is not allowed (must be (new C).f()) but some cases have this syntax
+ 
 # program = r"""
 
 # (*class C inherits A{
@@ -63,11 +65,21 @@ from checksemantic.scope import Scope
 # """
 
 program = r"""
-class Main {
-  x : Int;
-  main() : Object {
-    (new IO). out_string(while (x < 10) loop x <- x + 1 pool.type_name())
+class Test {
+  foo:Test;
+  x : Bool;
+  bar():Bool { 
+	  {
+      x = (3 < 4);
+      3 < 4 = x;
+    }
   };
+};
+
+class Main {
+	main() : Int {
+		1
+	};
 };
 """
 
