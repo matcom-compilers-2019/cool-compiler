@@ -22,9 +22,9 @@ class CheckSemanticsVisitor:
         result = True
         for c in node.classes:
             if c.parent:
-                scope.add_type(c.name.value, [m for m in c.features if isinstance(m, ast.MethodNode)], c.parent.value)
+                scope.add_type(c.name.value, [m for m in c.features if isinstance(m, ast.MethodNode)], [m for m in c.features if isinstance(m, ast.AttributeNode)],parent=c.parent.value)
             else:
-                scope.add_type(c.name.value, [m for m in c.features if isinstance(m, ast.MethodNode)])
+                scope.add_type(c.name.value, [m for m in c.features if isinstance(m, ast.MethodNode)], [m for m in c.features if isinstance(m, ast.AttributeNode)])
         for c in node.classes:
             child_scope = scope.create_child_scope(inside=c.name.value)
             if not self.visit(c, child_scope, errors):
@@ -47,7 +47,7 @@ class CheckSemanticsVisitor:
             val_t = self.visit(node.value, scope, errors)
         if val_t:
             t = node.type.value if node.type.value != 'SELF_TYPE' else scope.inside
-            if val_t != t and val_t != 'Void':
+            if not (scope.inherits(val_t,t,0)[0]) and val_t != 'Void':
                 errors.append('Attribute declaration failed because the types do not match at line %d column %d' % (node.type.line, node.type.column))
                 return ERROR
             t = val_t if val_t == 'Void' else node.type.value
@@ -74,7 +74,7 @@ class CheckSemanticsVisitor:
                 
         t = node.return_type.value if node.return_type.value != 'SELF_TYPE' else child_scope.inside
         fine = fine if fine != 'SELF_TYPE' else child_scope.inside
-        if t != fine:
+        if not scope.inherits(fine, t, 0)[0]:
             errors.append('The return type does not match with the expression in the body of method %s at line %d, column %d' % (node.name.value, node.return_type.line, node.return_type.column))
             return ERROR
         scope.add_method(node)

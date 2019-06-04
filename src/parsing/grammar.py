@@ -17,30 +17,35 @@ grammar = r"""
     feature_list : feature*
     ?feature : attr | method
     
-    attr : CLASS_BODY_ID ":" TYPE ["<""-"expr]";"//
+    attr : CLASS_BODY_ID ":" TYPE ["<-"expr]";"//
     
-    method : CLASS_BODY_ID "("decl_params")" ":" TYPE "{" expr "};"//
+    method : CLASS_BODY_ID "("decl_params")" ":" TYPE "{" expr "}"";"//
     decl_params : (decl_param)?("," decl_param)*
     decl_param : CNAME ":" TYPE
 
-    assignment : CNAME "<""-" expr//
+    assignment : CNAME "<-" expr//
     
     ?expr :   decl 
             | assignment 
             | new 
             | calc
+            | atom
 
-    ?calc :   expr "<" expr -> less 
-            | expr "=" expr -> eq 
-            | expr "<""=" expr -> leq
-            | expr ">" expr -> g
-            | expr ">""=" expr -> ge
+
+    ?calc :   calc "<" calc -> less 
+            | calc "=" calc -> eq 
+            | calc "<=" calc -> leq
+            | calc ">" calc -> g
+            | calc ">=" calc -> ge
             | calc_atom
     
-    ?calc_atom :    "("expr")"
-                  | arithmetic
-                  | string
-                  | atom
+    ?calc_atom :    dispatchable
+                  | larithm
+    
+    ?dispatchable: string
+                | ar
+                | "("expr")"
+                | SELF -> self
 
 
     ?arithmetic : ar | larithm
@@ -69,15 +74,15 @@ grammar = r"""
     
     conditional : IF expr THEN expr ELSE expr FI//
 
-    loop : WHILE calc LOOP expr POOL//
+    loop : WHILE expr LOOP expr POOL//
     
     case : CASE expr OF branches ESAC//
     branches : (branch)+
-    branch :  ID ":" TYPE "="">" expr ";" //
+    branch :  ID ":" TYPE "=>" expr ";" //
 
-    ?atom : boolean_atom  | loop  | SELF -> self
+    ?atom : boolean_atom  | loop
     ?num_atom : SIGNED_NUMBER -> number | ID -> id | "("arithmetic")" -> braces | dispatch | case | conditional | block 
-    ?boolean_atom : TRUE -> true | FALSE -> false | NOT calc -> notx | isvoid
+    ?boolean_atom : TRUE -> true | FALSE -> false | NOT expr -> notx | isvoid
     
     isvoid : ISVOID expr
     ?new : NEW TYPE
@@ -85,12 +90,12 @@ grammar = r"""
     
     let : LET decl_list IN expr
     decl_list : decl("," decl)*
-    decl : CNAME ":" TYPE ["<""-" expr]
+    decl : CNAME ":" TYPE ["<-" expr]
 
     ?dispatch : point_dispatch | short_dispatch | parent_dispatch
-    point_dispatch : calc_atom"."CNAME func_params
+    point_dispatch : dispatchable"."CNAME func_params
     short_dispatch : CLASS_BODY_ID func_params
-    parent_dispatch : calc_atom"@"TYPE"."CNAME func_params
+    parent_dispatch : dispatchable"@"TYPE"."CLASS_BODY_ID func_params
 
     func_params : "(" [expr(","expr)*] ")"
 
