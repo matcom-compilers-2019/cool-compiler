@@ -24,7 +24,9 @@ class CheckSemanticsVisitor:
             methods = [m for m in c.features if isinstance(m, ast.MethodNode)]
             attrs = [m for m in c.features if isinstance(m, ast.AttributeNode)]
             p = 'Object' if not c.parent else c.parent.value
-            scope.add_type(c.name.value, [], [], parent=p)
+            if not scope.add_type(c.name.value, [], [], parent=p):
+                errors.append('Class "%s" cannot be defined twice at line %d, column %d' % (c.name.value, c.name.line, c.name.column))
+                return False
             child_scope = scope.create_child_scope(inside=c.name.value)
             for m in methods:
                 if not scope.define_method(c.name.value, m):
@@ -44,6 +46,9 @@ class CheckSemanticsVisitor:
     @visitor.when(ast.ClassNode)
     def visit(self, node, scope, errors):
         result = True
+        if node.parent and (node.parent.value == 'Int' or node.parent.value == 'Bool' or node.parent.value == 'String'):
+            errors.append("Cannot inherits from '%s' at line %d, column %d" % (node.parent.value, node.parent.line, node.parent.column))
+            return ERROR
         if node.parent and not scope.check_type(node.parent.value):
             errors.append('Type %s is not defined at line %d, column %d' %(node.parent.value, node.parent.line, node.parent.column))
         for f in node.features:
@@ -259,12 +264,13 @@ class CheckSemanticsVisitor:
         for i in range(len(node.params)):
             arg_t = self.visit(node.params[i], scope, errors)
             if not arg_t:
+                errors.append("Parameter '%s' not defined."%(method.params[i].name.value))
                 result = False
             param_t = method.params[i].type.value
-            if arg_t != 'Void' and not scope.inherits(arg_t, param_t, 0):
-                errors.append('Parameter %s has type %s but %s was given at line %d, column %d.' % (method.params[i].name.value, param_t, arg_t, node.params[i].name.line, node.params[i].name.column))
+            if arg_t != 'Void' and not scope.inherits(arg_t, param_t, 0)[0]:
+                errors.append('The type of parameter "%s" does not match' % (method.params[i].name.value))
                 result = False
-        return True
+        return result
         
     @visitor.when(ast.ShortDispatchNode)
     def visit(self, node, scope, errors):

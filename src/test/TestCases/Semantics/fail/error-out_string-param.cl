@@ -1,4 +1,4 @@
-Class Complex inherits IO {
+class Complex inherits IO {
     a : Int;
     b : Int;
 
@@ -8,16 +8,18 @@ Class Complex inherits IO {
             out_string(" + ");
             out_string(b);      (*error, the variable 'a' is not a string*)
             out_string("i");
+"s";
         }
     };
 
     sum(other : Complex) : String {
-        out_string("sumando")
+        {out_string("sumando");
+"";}
     };
 
 };
 
-Class Main inherits IO {
+class Main inherits IO {
     number1 : Complex;
     number2 : Complex;
 };

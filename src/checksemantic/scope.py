@@ -166,17 +166,15 @@ class Scope:
     def get_attr_type(self, tp, aname):
         if not tp:
             return False
-        curr = self
+        curr = self.root()
         parent = None
-        while curr:
-            for t in curr.types:
-                if tp != t[0]:
-                    continue
-                parent = t[1]
-                for attr in t[3]:
-                    if attr.name.value == aname:
-                        return attr.type.value
-            curr = curr.parent
+        for t in curr.types:
+            if tp != t[0]:
+                continue
+            parent = t[1]
+            for attr in t[3]:
+                if attr.name.value == aname:
+                    return attr.type.value
         return self.get_attr_type(parent, aname)
 
     def is_local(self, vname):

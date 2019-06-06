@@ -65,21 +65,14 @@ from checksemantic.scope import Scope
 # """
 
 program = r"""
-class Test {
-  foo:Test;
-  x : Bool;
-  bar():Bool { 
-	  {
-      x = (3 < 4);
-      3 < 4 = x;
-    }
-  };
-};
+class Main inherits IO {
 
-class Main {
-	main() : Int {
-		1
-	};
+    a: Intt <- 1;
+    b: Int <- 2;
+
+    main(): Int {
+        out_int(a+b)
+    };
 };
 """
 
