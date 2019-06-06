@@ -1,0 +1,83 @@
+\documentclass{article}
+\author{Jos\'e Jorge Rdr\'{i}guez Salgado \\
+	Christian Rodr\'{i}guez D\'{i}az \\
+	Hector Adri\'an Castellano Loaces \\
+	Alberto Gonz\'alez Rosales \\
+	\ \ \ \ C-411}
+\date{Curso: 2018-2019}
+\title{Reporte de entrega del proyecto final de la asignatura Complementos de Compilaci\'on}
+
+\begin{document}
+	\maketitle
+	
+	\section{Introducci\'on}
+	
+	En el presente reporte se hace un recorrido por los principales aspectos de la implementaci\'on de un compilador del lenguaje COOL. Dicha implementaci\'on constituye la evaluaci\'on
+	final del curso de Complementos de Compilaci\'on correspondiente al cuarto a\~no de la carrera Ciencias de la Computaci\'on de la Universidad de La Habana.
+	
+	En la siguiente secci\'on se expone c\'omo obtener y utilizar este proyecto. La secci\'on n\'umero \ref{sec:parsing} contiene los elementos destacables en la fase de parsing, en la n\'umero \ref{sec:semantics} se expone la fase de chequeo sem\'antico, en la \ref{sec:code-gen} la fase de generaci\'on de c\'odigo y en la \ref{sec:conclusions} se realizan las conclusiones.
+	
+	\section{Requisitos y uso del proyecto}
+	
+	La presente implementaci\'on de un compilador del lenguaje Cool fue echa en \textbf{Python3}. Para compilar el c\'odigo Cool contenido en un archivo de 
+	entrada y obtener el correspondiente c\'odigo \textbf{MIPS} en otro archivo de salida se debe ejecutar el script de python \texttt{cool.py} que se encuentra en
+	el directorio \texttt{src} pasando como par\'ametros el path completo de los archivos de entrada y de salida respectivamente. A continuaci\'on un ejemplo:
+	
+	\begin{center}
+		\texttt{python ./cool.py <input-path> <output-path>}
+	\end{center}
+
+	
+	En el ejemplo anterior se supone que el comando est\'a escrito en una terminal abierta en el directorio \texttt{src}, que \texttt{python} se refiere al 
+	int\'erprete de Python3 y los valores entre angulares son el path de los archivos de entrada y salida respectivamente.
+	
+	Para la fase de parsing fue utilizado el generador de parsers \textbf{Lark}, el cual puede ser instalado utilizando el gestor de paquetes \textbf{pip} o puede 
+	ser descargado de GitHub. A continuaci\'on el comando que debe ser escrito para instalar el m\'odulo Lark utilizando el gestor de paquetes pip:
+	
+	\begin{center}
+		\texttt{pip install lark-parser}
+	\end{center}
+
+	No existe ning\'un otro requisito para utilizar el presente compilador que no sean los expuestos anteriormente.
+	
+	El proyecto puede encontrarse en https://github.com/matcom-compilers-2019/cool-compiler-jj-christian-alberto-hector-c411
+	
+	\section{Parseo}
+	\label{sec:parsing}
+	
+	En esta fase se procesa el c\'odigo COOL y se crea el AST correspondiente. Lo primero que se hace es preprocesar el c\'odigo de entrada para extraer los comentarios y destacar las palabras reservadas del lenguaje de forma tal que, m\'as adelante, se puedan diferenciar de cualquier identificador. 
+	
+	Como se expuso en la secci\'on anterior, para esta fase se utiliz\'o el generador de parsers Lark.
+	
+	Lark contiene una peque\~na colecci\'on de expresiones regulares comunes como las reconocedoras de n\'umeros, identificadores, etc. A partir de estas es f\'acil construir los tokens espec\'{i}ficos necesarios para el lexer de COOL. Es posible adem\'as expecificar una gram\'atica donde los terminales son escritos en may\'usculas y los no terminales en min\'usculas. De esta forma Lark diferencia estos s\'{i}mbolos y construye un lexer autom\'aticamente.
+	
+	Lark da una alternativa al parser \textit{LALR}: el parser \textit{Early}, que es capaz de parsear gram\'aticas con un gran nivel de ambiguedad, adem\'as, puede mostrar en qu\'e momento el c\'odigo es ambiguo y muestra todas las alternativas posibles. Esto fue de gran ayuda para confeccionar r\'apidamente una gram\'atica no ambigua que reconociera el lenguaje COOL.
+	
+	Este m\'odulo contiene una clase \textit{Transformer} que posee las funcionalidades necesarias para procesar el \'arbol de derivaci\'on creado y convertirlo en el AST deseado, utilizando el patr\'on visitor.
+	
+	De esta forma se obtiene un AST sobre el cual se realizar\'a el chequeo sem\'antico que se expone en la siguiente secci\'on.
+	
+	\section{Chequeo sem\'antico}
+	\label{sec:semantics}
+	
+	En la presente secci\'on se expone c\'omo se verifica el uso correcto de tipos que exige COOL. Para ello se hizo uso del patr\'on visitor de forma que, recorriendo los nodos del AST, se logra chequear el cumplimiento de las reglas de tipado presentes en COOL. Todo se realiza en una sola pasada por el AST.
+	
+	Un programa en COOL se puede ver como una lista de clases donde desde cualquiera de ellas se puede referenciar a las dem\'as. Es por eso, que en el scope principal deben estar definidas todas las clases sin importar cu\'al se define primero y cu\'al despu\'es. De esta forma se consigue que desde una clase definida al inicio del programa se pueda hacer referencia a otra definida m\'as abajo.
+	
+	Para lograr esto, lo primero que se hace es definir en el scope principal todas las clases con sus atributos y m\'etodos. Claro est\'a que estos campos no est\'an verificados a\'un, por tanto, lo que se pasa al scope es la referencia del nodo de AST correspondiente (nodo m\'etodo o nodo atributo).
+	
+	Un primer problema fue lidiar con el \textit{SELF\_TYPE} y la variable \textit{self}. Debe destacarse que la primera instancia de un scope que se crea no cubre ninguna clase en particular, o sea, no es el scope interno de ninguna clase sino el scope que abarca todo el programa. En \'el est\'an definidos los tipos b\'asicos del lenguaje y el resto de las clases definidas por el programador. Pero cada scope que se cree a partir de ese momento va a representar un \'ambito interno de una clase particular. Por este motivo se cre\'o el campo \textit{inside} dentro de cada scope, el cual contiene el nombre de la clase dentro de la que est\'a definida esta instancia de scope (a menos que sea el scope inicial que tiene este valor anulado). As\'{i} es posible resolver de manera eficiente a qu\'e tipo se refieren \textit{SELF\_TYPE} y \textit{self} en cada momento.
+	
+	En COOL es posible que una clase heredera redefina un m\'etodo de una clase ancestro. Para ello, el nuevo m\'etodo debe tener exactamente la misma signatura que el m\'etodo que se quiere redefinir (mismo nombre, misma cantidad y tipo de par\'ametros y mismo tipo de retorno). En este aspecto surge la duda de qu\'e hacer cuando se quiere redefinir un m\'etodo que tenga tipo de retorno o de alg\'un par\'ametro igual a \textit{SELF\_TYPE}. Porque pudiera el nuevo m\'etodo sustituir este tipo espec\'{i}fico por otro que herede del mismo en el momento que se defini\'o el m\'etodo original. En este aspecto se tom\'o a cabalidad las instrucciones presentes en el Manual de COOL donde se exige que los tipos deben ser exactamente los mismos, por tanto, debe mantenerse el \textit{SELF\_TYPE} para redefinir de forma v\'alida el m\'etodo deseado.
+	
+	Para resolver el tipo de las expresiones \textit{case of} e \textit{if then else} se implementaron en la clase Scope las funcionalidades que permiten saber si una clase hereda de otra y el ancestro com\'un m\'as bajo a un par de clases respectivamente. No s\'olo se puede saber si una clase hereda de otra, sino que tambi\'en se puede saber la distancia a la que se encuentran (algo que es necesario para resolver el tipo de las expresiones \textit{case of}).
+	
+	A continuaci\'on se expondr\'a el proceso de generaci\'on de c\'odigo.
+	
+	\section{Generaci\'on de C\'odigo}
+	\label{sec:code-gen}
+	
+	\section{Conclusiones}
+	\label{sec:conclusions}
+	  
+\end{document}
