@@ -7,6 +7,6 @@ class Foo {
 
 class Main {
 	main() : Int {
-		new Foo.bar()
+		(new Foo).bar()
 	};
 };

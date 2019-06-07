@@ -80,7 +80,7 @@ grammar = r"""
     branches : (branch)+
     branch :  ID ":" TYPE "=>" expr ";" //
 
-    ?num_atom : SIGNED_NUMBER -> number | ID -> id | "("arithmetic")" -> braces | dispatch | case | conditional | block 
+    ?num_atom : SIGNED_NUMBER -> number | ID -> id | "("expr")" -> braces | dispatch | case | conditional | block 
     ?boolean_atom : TRUE -> true | FALSE -> false | NOT expr -> notx | isvoid
     
     isvoid : ISVOID expr

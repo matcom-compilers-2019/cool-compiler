@@ -168,6 +168,7 @@ class Variable inherits Expr {
   
   substitute(x : Variable, e : Expr) : Expr {
     if x = self then e else self fi
+
   };
 
   gen_code(env : VarList, closures : LambdaListRef) : IO {

@@ -5,7 +5,6 @@
 from parsing import cool_ast as ast
 import visitor
 from checksemantic.scope import Scope
-
 ERROR = 0
 
 class CheckSemanticsVisitor:
@@ -115,9 +114,20 @@ class CheckSemanticsVisitor:
     def visit(self, node, scope, errors):
         rleft = self.visit(node.left, scope, errors)
         rright = self.visit(node.right, scope, errors)
-        if rleft != rright:
-            errors.append('Operator error: the operand types do not match')
+
+        if isinstance(node, ast.EqualNode):
+            return self.visit_equal(scope, rleft, rright, errors)
+
+        if rleft != 'Int' or rright != 'Int':
+            errors.append('Operator error: the operand types do not match. Both operands must be "INTEGER"')
             return ERROR
+        return 'Bool'
+
+    def visit_equal(self, scope, rleft, rright, errors):
+        if rleft == 'Int' or rleft == 'String' or rleft == 'Bool' or rright == 'Int' or rright == 'String' or rright == 'Bool':
+            if rleft != rright:
+                errors.append("Operator error: the operand types must be the same when one of them is a basic type on equality")
+                return False
         return 'Bool'
 
     @visitor.when(ast.ArithmeticNode)
@@ -289,6 +299,7 @@ class CheckSemanticsVisitor:
             return ERROR
         m = scope.look_for_method(t,node.method_name.value)
         if not m:
+            errors.append('Method "%s" not defined at line %d column %d' % (node.method_name.value, node.method_name.line, node.method_name.column))
             return ERROR
         if not self.arguments_checker(m, node, scope, errors):
             return ERROR
@@ -302,6 +313,7 @@ class CheckSemanticsVisitor:
             return ERROR
         m = scope.look_for_method(node.parent.value, node.method_name.value)
         if not m:
+            errors.append('Method "%s" not defined at line %d column %d' % (node.method_name.value, node.method_name.line, node.method_name.column))
             return ERROR
         if not self.arguments_checker(m, node, scope, errors):
             return ERROR

@@ -185,7 +185,7 @@ class BinaryTree {
 					io.out_string(" ");
 				}
 				fi;
-				io.out_string_line("");	
+				io.out_string("\n");	
 				if not isvoid leftNode
 				then
 					print_node(leftNode)
@@ -219,13 +219,13 @@ class Main {
 			tree.insert(4, 4);
 			tree.insert(7, 7);
 			tree.insert(13, 13);
-			io.out_string_line("result tree:");
+			io.out_string("result tree:\n");
 			tree.print();
-			io.out_string_line("");
+			io.out_string("\n");
 			let findNode: BinaryTreeNode  <- tree.find(5) in
 				if isvoid findNode
 				then
-					io.out_string_line("key'5' does not found")
+					io.out_string("key'5' does not found\n")
 				else
 				{
 					io.out_string("value of key'5' is ");
@@ -236,24 +236,25 @@ class Main {
 			let findNode: BinaryTreeNode <- tree.find(13) in
 				if isvoid findNode
 				then
-					io.out_string_line("key'13' does not found")
+					io.out_string("key'13' does not found\n")
 				else
 				{
 					io.out_string("value of key'13' is ");
-					io.out_int_line(findNode.getValue());
+					io.out_int(findNode.getValue());
+io.out_string("\n");
 				}
 				fi;
 			let findNode: BinaryTreeNode <- tree.find(8) in
 				if isvoid findNode
 				then
-					io.out_string_line("key'8' does not found")
+					io.out_string("key'8' does not found\n")
 				else
 				{
 					io.out_string("value of key '8' is ");
 					io.out_int(findNode.getValue());
 				}
 				fi;
-			io.out_string_line("");
+			io.out_string("\n");
 			while true
 			loop
 			{	
@@ -279,7 +280,7 @@ class Main {
 							tree.print()
 						fi
 					fi
-					io.out_string_line("");
+					io.out_string("\n");
 				};
 			}
 			pool

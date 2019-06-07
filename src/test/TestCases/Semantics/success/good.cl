@@ -2,7 +2,7 @@ class A {
  f: Int;
 };
 
-Class BB__ inherits A {
+class BB__ inherits A {
 };
 
 class Main {
