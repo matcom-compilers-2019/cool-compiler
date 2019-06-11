@@ -65,12 +65,16 @@ class CheckSemanticsVisitor:
         t = None
         if node.value:
             t = self.visit(node.value, scope, errors)
+            if not t:
+                return ERROR
         if t:
             val_t = scope.true_type(val_t)
             if not (scope.inherits(t,val_t,0)[0]):
                 errors.append('Attribute declaration failed because the types do not match at line %d column %d' % (node.type.line, node.type.column))
                 return ERROR
+            node.static_type = val_t
             return val_t
+        node.static_type = val_t
         return val_t
     
     @visitor.when(ast.MethodNode)
@@ -97,6 +101,7 @@ class CheckSemanticsVisitor:
             errors.append('The return type does not match with the expression in the body of method %s at line %d, column %d' % (node.name.value, node.return_type.line, node.return_type.column))
             return ERROR
         scope.add_method(node)
+        node.static_type = fine
         return fine
     
     @visitor.when(ast.ParamNode)
@@ -108,6 +113,7 @@ class CheckSemanticsVisitor:
             errors.append('Parameter cannot be "SELF_TYPE" at line %d, column %d' % (node.type.line, node.type.column))
             return ERROR
         scope.define_param(node.name.value, node.type.value)
+        node.static_type = node.type.value
         return node.type.value
 
     @visitor.when(ast.ComparerNode)
@@ -116,11 +122,15 @@ class CheckSemanticsVisitor:
         rright = self.visit(node.right, scope, errors)
 
         if isinstance(node, ast.EqualNode):
-            return self.visit_equal(scope, rleft, rright, errors)
+            result = self.visit_equal(scope, rleft, rright, errors)
+            if result:
+                node.static_type = result
+            return result
 
         if rleft != 'Int' or rright != 'Int':
             errors.append('Operator error: the operand types do not match. Both operands must be "INTEGER"')
             return ERROR
+        node.static_type = 'Bool'
         return 'Bool'
 
     def visit_equal(self, scope, rleft, rright, errors):
@@ -137,6 +147,7 @@ class CheckSemanticsVisitor:
         if rleft != "Int" or rright != "Int":
             errors.append('Operator error: the operand types do not match. Both operands must be "INTEGER"')
             return ERROR
+        node.static_type = rleft
         return rleft
 
     @visitor.when(ast.OpositeNode)
@@ -145,6 +156,7 @@ class CheckSemanticsVisitor:
         if expr_type != "Int" :
             errors.append('The "~" operator takes an INTEGER expression as parameter, "%s" was given' % (expr_type))
             return ERROR
+        node.static_type = expr_type
         return expr_type
 
     @visitor.when(ast.NotNode)
@@ -153,6 +165,7 @@ class CheckSemanticsVisitor:
         if expr_type != "Bool" :
             errors.append('The "not" operator takes a BOOLEAN expression as parameter, "%s" was given' % (expr_type))
             return ERROR
+        node.static_type = expr_type
         return expr_type
 
     @visitor.when(ast.LetNode)
@@ -160,7 +173,10 @@ class CheckSemanticsVisitor:
         child_scope = scope.create_child_scope()
         for dcl in node.let_part:
             self.visit(dcl, child_scope, errors, let=True)
-        return self.visit(node.in_part, child_scope, errors)
+        result = self.visit(node.in_part, child_scope, errors)
+        if result:
+            node.static_type = result
+        return result
 
     @visitor.when(ast.BlockNode)
     def visit(self, node, scope, errors):
@@ -170,6 +186,7 @@ class CheckSemanticsVisitor:
             rtype = self.visit(expr, child_scope, errors)
             if not rtype:
                 return ERROR
+        node.static_type = rtype
         return rtype
 
     @visitor.when(ast.AssignationNode)
@@ -181,18 +198,22 @@ class CheckSemanticsVisitor:
         if rtype != 'Void' and not scope.inherits(rtype, scope.get_type(node.name.value), 0):
             errors.append('Assignation failed due to the type of the variable  "%s" and the type of the assigned expression do not match at line %d column %d' % (node.name.value, node.name.line, node.name.column))
             return ERROR
+        node.static_type = rtype
         return rtype
 
     @visitor.when(ast.NumberNode)
     def visit(self, node, scope, errors):
+        node.static_type = 'Int'
         return "Int"
 
     @visitor.when(ast.BoolNode)
     def visit(self, node, scope, errors):
+        node.static_type = 'Bool'
         return "Bool"
     
     @visitor.when(ast.StrtingNode)
     def visit(self, node, scope, errors):
+        node.static_type = 'String'
         return "String"
 
     @visitor.when(ast.VarNode)
@@ -200,7 +221,10 @@ class CheckSemanticsVisitor:
         if not scope.is_defined(node.id.value):
             errors.append('Variable "%s" not defined at  line %s column %s.' % (node.id.value, node.id.line, node.id.column))
             return ERROR
-        return scope.get_type(node.id.value)
+        result = scope.get_type(node.id.value)
+        if result:
+            node.static_type = result
+        return result
 
     @visitor.when(ast.DeclarationNode)
     def visit(self, node, scope, errors, let=False):
@@ -221,13 +245,16 @@ class CheckSemanticsVisitor:
             return ERROR
         
         if let:
-            return scope.define_for_let(node.name.value, node.type.value)
+            result = scope.define_for_let(node.name.value, node.type.value)
+            if result:
+                node.static_type = result
 
-        if scope.is_local(node.name.value):
+        if scope.is_local(node.name.value) and not let:
             errors.append('Variable "%s" already defined at line:%d column:%d.' % (node.name.value, node.name.line, node.name.column))
             return ERROR
         
         scope.define_variable(node.name.value, t) if rtype != 'Void' else scope.define_variable(node.name.value, 'Void')
+        node.static_type = rtype
         return rtype
     
     @visitor.when(ast.NewNode)
@@ -235,7 +262,10 @@ class CheckSemanticsVisitor:
         if not scope.check_type(node.type.value):
             errors.append('Type "%s" not defined at line %d column %d' % (node.type.value, node.type.line, node.type.column))
             return ERROR
-        return scope.true_type(node.type.value)
+
+        result = scope.true_type(node.type.value)
+        node.static_type = result
+        return result
     
     @visitor.when(ast.LoopNode)
     def visit(self, node, scope, errors):
@@ -245,7 +275,11 @@ class CheckSemanticsVisitor:
             return ERROR
         child_scope = scope.create_child_scope()
         result = self.visit(node.body, child_scope, errors)
-        return ERROR if not cvisit or not result else 'Void'
+        if not cvisit or not result:
+            return ERROR
+        else:
+            node.static_type = 'Void'
+            return 'Void'
     
     @visitor.when(ast.ConditionalNode)
     def visit(self, node, scope, errors):
@@ -260,7 +294,9 @@ class CheckSemanticsVisitor:
         _else = self.visit(node.else_part, child_scope, errors)
         if not _if or not _then or not _else:
             return ERROR
-        return scope.join(_then, _else)
+        result = scope.join(_then, _else)
+        node.static_type = result
+        return result
     
     def arguments_checker(self, method, node, scope, errors):
         if len(node.params) != len(method.params):
@@ -290,7 +326,10 @@ class CheckSemanticsVisitor:
             return ERROR
         if not self.arguments_checker(method, node, scope, errors):
             return ERROR
-        return scope.true_type(method.return_type.value)
+        
+        result = scope.true_type(method.return_type.value)
+        node.static_type = result
+        return result
 
     @visitor.when(ast.PointDispatchNode)
     def visit(self, node, scope, errors):
@@ -304,7 +343,9 @@ class CheckSemanticsVisitor:
         if not self.arguments_checker(m, node, scope, errors):
             return ERROR
         sc = scope.get_scope_of_type(t)
-        return sc.true_type(m.return_type.value)
+        result = sc.true_type(m.return_type.value)
+        node.static_type = result
+        return result
     
     @visitor.when(ast.ParentDispatchNode)
     def visit(self, node, scope, errors):
@@ -318,12 +359,15 @@ class CheckSemanticsVisitor:
         if not self.arguments_checker(m, node, scope, errors):
             return ERROR
         sc = scope.get_scope_of_type(node.parent.value)
-        return sc.true_type(m.return_type.value)
+        result = sc.true_type(m.return_type.value)
+        node.static_type = result
+        return result
 
     @visitor.when(ast.IsVoidNode)
     def visit(self, node, scope, errors):
         if not self.visit(node.expr, scope, errors):
             return ERROR
+        node.static_type = 'Bool'
         return 'Bool'
     
     @visitor.when(ast.CaseNode)
@@ -352,6 +396,7 @@ class CheckSemanticsVisitor:
         if not result:
                 errors.append("Error in expression of branch %s at line %d, column %d" % (b.id.value, b.id.line, b.id.column))
                 return ERROR
+        node.static_type = result
         return result
     
     @visitor.when(ast.BranchNode)
@@ -360,8 +405,10 @@ class CheckSemanticsVisitor:
         if not rtype:
             errors.append('Error on branch because the assigned expression is not defined at line %d column %d' % (node.id.line, node.name.column))
             return ERROR
+        node.static_type = rtype
         return rtype
 
     @visitor.when(ast.VoidNode)
     def visit(self, node, scope, errors):
+        node.static_type = 'Void'
         return 'Void'

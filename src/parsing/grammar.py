@@ -38,14 +38,20 @@ grammar = r"""
             | calc ">=" calc_atom -> ge
             | calc_atom
     
-    ?calc_atom :    dispatchable
+    ?calc_atom :    atomic
                   | larithm
+                  | ar
     
-    ?dispatchable: string
-                | ar
-                | "("expr")"
-                | loop
-                | SELF -> self
+    ?atomic: string
+            | "("expr")"
+            | loop
+            | SELF -> self
+
+    ?dispatchable: atomic
+                | ID -> id
+                | block
+                | dispatch
+                
 
 
     ?arithmetic : ar | larithm | assignment 
@@ -80,7 +86,7 @@ grammar = r"""
     branches : (branch)+
     branch :  ID ":" TYPE "=>" expr ";" //
 
-    ?num_atom : SIGNED_NUMBER -> number | ID -> id | "("expr")" -> braces | dispatch | case | conditional | block 
+    ?num_atom :  ID->id | block | SIGNED_NUMBER -> number | dispatch | case | conditional | "("expr")"
     ?boolean_atom : TRUE -> true | FALSE -> false | NOT expr -> notx | isvoid
     
     isvoid : ISVOID expr
