@@ -91,4 +91,18 @@ class PushVarIL(ILNode):
             return 'ARG {}'.format(self.value)
         return 'Local {}'.format(self.value)
 
+class GotoIL(ILNode):
+    def __init__(self, label):
+        self.label = label
+
+    def __str__(self):
+        return 'GOTO {}'.format(label)
+
+class IfJumpIL(ILNode):
+    def __init__(self, var, label):
+        self.var = var
+        self.label = label
+
+    def __str__(self):
+        return 'IF {} GOTO {}'.format(var, label) 
         

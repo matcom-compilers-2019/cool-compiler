@@ -18,9 +18,10 @@ class Variables:
         
     def  add_var(self, name):
         self.variables[name] = len(self.variables) + 1
-    
-    def get_offset(self, name):
-        return len(self.variables) - variables[name]
+        return len(self.variables)
+
+    def get(self, name):
+        return self.variables[name]
 
     def rm_var(self, name):
         self.variables.pop(name)
