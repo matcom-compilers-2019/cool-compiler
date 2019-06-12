@@ -1,28 +1,34 @@
 class Node:
-    pass
+    def __init__(self):
+        self.static_type = None        
 
 class ProgramNode(Node):
     def __init__(self, class_list):
+        super().__init__()
         self.class_list = class_list
 
 class ClassListNode(Node):
     def __init__(self, clss):
+        super().__init__()
         self.classes = clss
 
 class ClassNode(Node):
     def __init__(self, name, features, parent=None):
+        super().__init__()
         self.name = name
         self.features = features
         self.parent = parent
 
 class AttributeNode(Node):
     def __init__(self, name, t, value):
+        super().__init__()
         self.name = name
         self.type = t
         self.value = value
 
 class MethodNode(Node):
     def __init__(self, name, params, return_type, body):
+        super().__init__()
         self.name = name
         self.params = params
         self.return_type = return_type
@@ -30,19 +36,23 @@ class MethodNode(Node):
 
 class ParamNode(Node):
     def __init__(self, name, t):
+        super().__init__()
         self.name = name
         self.type = t
 
 class ExpressionNode(Node):
-    pass
+    def __init__(self):
+        super().__init__()
 
 class AssignationNode(ExpressionNode):
     def __init__(self, name, value):
+        super().__init__()
         self.name = name
         self.value = value
 
 class BinaryNode(ExpressionNode):
     def __init__(self, left, right):
+        super().__init__()
         self.left = left
         self.right = right
 
@@ -93,10 +103,12 @@ class DivNode(ArithmeticNode):
         super().__init__(left, right)
 
 class AtomicNode(ExpressionNode):
-    pass
+    def __init__(self):
+        super().__init__()
 
 class UnaryNode(AtomicNode):
     def __init__(self, expr):
+        super().__init__()
         self.expr = expr
 
 class OpositeNode(UnaryNode):
@@ -109,6 +121,7 @@ class NotNode(UnaryNode):
 
 class ConstantNode(AtomicNode):
     def __init__(self, value):
+        super().__init__()
         self.value = value
 
 class NumberNode(ConstantNode):
@@ -125,23 +138,27 @@ class BoolNode(ConstantNode):
 
 class CaseNode(AtomicNode):
     def __init__(self, main_expr, branches):
+        super().__init__()
         self.main_expr = main_expr
         self.branches = branches
 
-class BranchNode:
+class BranchNode(Node):
     def __init__(self, id, t, expr):
+        super().__init__()
         self.id = id
         self.type = t
         self.expr = expr
 
-class DeclarationNode:
+class DeclarationNode(Node):
     def __init__(self, name, t, expr):
+        super().__init__()
         self.name = name
         self.type = t
         self.expr = expr
 
 class BlockNode(AtomicNode):
     def __init__(self, exprs):
+        super().__init__()
         self.exprs = exprs
 
 class IsVoidNode(UnaryNode):
@@ -150,10 +167,12 @@ class IsVoidNode(UnaryNode):
 
 class VarNode(AtomicNode):
     def __init__(self, id):
+        super().__init__()
         self.id = id
 
 class DispatchNode(AtomicNode):
     def __init__(self, method_name, params):
+        super().__init__()
         self.method_name = method_name
         self.params = params
 
@@ -174,31 +193,38 @@ class ParentDispatchNode(DispatchNode):
 
 class ConditionalNode(ExpressionNode):
     def __init__(self, if_part, then_part, else_part):
+        super().__init__()
         self.if_part = if_part
         self.then_part = then_part
         self.else_part = else_part
 
 class LoopNode(ExpressionNode):
     def __init__(self, condition, body):
+        super().__init__()
         self.condition = condition
         self.body = body
 
 class LetNode(AtomicNode):
     def __init__(self, let_part, in_part):
+        super().__init__()
         self.let_part = let_part
         self.in_part = in_part
 
 class NewNode(AtomicNode):
     def __init__(self, t):
+        super().__init__()
         self.type = t
 
 class PrintNode(AtomicNode):
     def __init__(self, expr):
+        super().__init__()
         self.expr = expr
 
 class ScanNode(AtomicNode):
     def __init__(self, expr):
+        super().__init__()
         self.expr = expr
 
 class VoidNode(AtomicNode):
-    pass
+    def __init__(self):
+        super().__init__()
