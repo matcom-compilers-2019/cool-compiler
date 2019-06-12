@@ -13,9 +13,20 @@ T1 = '$t1'
 
 
 class MIPS:
-    def __init__(self, nodes):
+    def __init__(self, nodes_code, nodes_data):
         self.code = []
+        self.nodes = nodes
     
+    def generate(self):
+
+        static_code = ""
+
+        static_code += "inherit:\n"
+        static_code += ""
+
+        for node in nodes:
+            self.visit(node)
+
 
     @visitor.when(il.BinOpIL)
     def visit(self, node):
@@ -79,7 +90,7 @@ class MIPS:
     def visit(self, node):
         self.code.append("{}:".fromat(node.label))
 
-    #-----------FALTA VER BIEN FUNCIONALIDAD DE ESTE NODO--
+    # -----------FALTA VER BIEN FUNCIONALIDAD DE ESTE NODO--
     # @visitor.when(il.PushVarIL)
     # def visit(self, node):
     #     self.code.append("lw $a0, {}($sp)".format(node.value))
@@ -93,5 +104,54 @@ class MIPS:
     def visit(self, node):
         self.code.append("lw $a0, {}($sp)".format(node.var))
         self.code.append("beqz $a0, {}($sp)".format(node.label))
+    
+    @visitor.when(il.PopIL)
+    def visit(self, node):
+        self.code.append("add $sp, $sp, {}".format(-4 * node.cant))
+
+    @visitor.when(il.PushIL)
+    def visit(self, node):
+        self.code.append("li $a0, {}".format(node.val))
+        self.code.append("sw $a0, ($sp)")
+        self.code.append("addiu $sp, $sp, 4")
+    
+    @visitor.when(il.ReturnIL)
+    def visit(self, node):
+        self.code.append("lw $ra, ($sp)")
+        self.code.append("addiu $sp, $sp, -4")
+        self.code.append("jr $ra")
+
+    @visitor.when(il.PushPCIL)
+    def visit(self, node):
+        self.code.append("sw $pc, ($sp)")
+        self.code.append("addiu $sp, $sp, 4")
 
 
+    #de aqui en adelante hay que revisarlos
+    @visitor.when(il.DispatchIL)
+    def visit(self, node):
+        #node.offset node.object
+        self.code.append("lw $a0, {}($sp)".format(4 * node.object))
+        self.code.append("li $a1, {}".format(4 * node.offset))
+        self.code.append("add $a0, $a0, $a1")
+        self.code.append("lw $a0, ($a0)")
+        self.code.append("jalr $ra, $a0")
+        
+
+    @visitor.when(il.DispatchParentIL)
+    def visit(self, node):
+        #node.offset node.object
+        self.code.append("lw $a0, {}($sp)".format(4 * node.object))
+        self.code.append("lw $a0, ($a0)")
+        self.code.append("li $a1, {}".format(4 * node.offset))
+        self.code.append("add $a0, $a0, $a1")
+        self.code.append("lw $a0, ($a0)")
+        self.code.append("jalr $ra, $a0")
+
+    @visitor.when(il.InheritIL)
+    def visit(self, node):
+        self.code.append("lw $a0, {}($sp)".format(4 * node.child))
+
+        self.code.append("la $a1, {}".format(node.labelParent))
+        self.code.append("la $t0, inherit")
+        self.code.append("jalr $ra, $t0")

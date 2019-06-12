@@ -2,6 +2,17 @@
 class ILNode():
     pass
 
+
+class vtableIL(ILNode):
+    def __init__(self, c, methods : []):
+        self.c = c
+        self.methods = methods 
+
+    def __str__(self):
+        result = 'vt_{}\n'.format(self.c)
+        for m in self.methods:
+            result += m + '\n'
+
 #Operations
 class BinOpIL(ILNode):
     def __init__(self, var : int, leftop : int, rightop : int, symb : str):
@@ -28,14 +39,14 @@ class AssigmentNodeIL(ILNode):
         self.left = left
         self.right = right
 
-class VarToVarIL(AssigmentNode):
+class VarToVarIL(AssigmentNodeIL):
     def __init__(self, left, rigth):
         super().__init__(left, rigth)
     
     def __str__(self):
         return "{} = {}".format(self.left, self.right)
 
-class MemoToVarIL(AssigmentNode):
+class MemoToVarIL(AssigmentNodeIL):
     def __init__(self, left, right, offset):
         super().__init__(left, right)
         self.offset = offset
@@ -43,7 +54,7 @@ class MemoToVarIL(AssigmentNode):
     def __str__(self):
         return "{} = {}".format(self.left, self.right + self.offset)
 
-class VarToMemoIL(AssigmentNode):
+class VarToMemoIL(AssigmentNodeIL):
     def __init__(self, left, right, offset):
         super().__init__(left, right)
         self.offset = offset
@@ -87,7 +98,7 @@ class PushVarIL(ILNode):
         self.arg = arg
 
     def __str__(self):
-        if arg:
+        if self.arg:
             return 'ARG {}'.format(self.value)
         return 'Local {}'.format(self.value)
 
@@ -96,7 +107,7 @@ class GotoIL(ILNode):
         self.label = label
 
     def __str__(self):
-        return 'GOTO {}'.format(label)
+        return 'GOTO {}'.format(self.label)
 
 class IfJumpIL(ILNode):
     def __init__(self, var, label):
@@ -104,5 +115,5 @@ class IfJumpIL(ILNode):
         self.label = label
 
     def __str__(self):
-        return 'IF {} GOTO {}'.format(var, label) 
+        return 'IF {} GOTO {}'.format(self.var, self.label) 
         
