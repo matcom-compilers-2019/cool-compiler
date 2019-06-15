@@ -50,6 +50,12 @@ class CheckSemanticsVisitor:
             return ERROR
         if node.parent and not scope.check_type(node.parent.value):
             errors.append('Type %s is not defined at line %d, column %d' %(node.parent.value, node.parent.line, node.parent.column))
+        if not node.parent:
+            from lark import Token
+            node.parent = Token(None, 'Object')
+        if scope.inherits(node.parent.value, node.name.value, 0)[0]:
+            errors.append("There is a cyclic inheritance in class %s at line %d, column %d" % (node.name.value, node.name.line, node.name.column))
+            return ERROR
         for f in node.features:
             if not self.visit(f, scope, errors):
                 errors.append('Error in feature "%s" at line %d, column %d' % (f.name.value, f.name.line, f.name.column))
@@ -403,7 +409,7 @@ class CheckSemanticsVisitor:
     def visit(self, node, scope, errors):
         rtype = self.visit(node.expr, scope, errors)
         if not rtype:
-            errors.append('Error on branch because the assigned expression is not defined at line %d column %d' % (node.id.line, node.name.column))
+            errors.append('Error on branch because the assigned expression is not defined at line %d column %d' % (node.id.line, node.id.column))
             return ERROR
         node.static_type = rtype
         return rtype

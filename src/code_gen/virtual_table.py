@@ -1,15 +1,15 @@
 class virtual_table:
     def __init__(self):     
-        self.clases = []        
+        self.clases = {}        
         self.methods = {}
         self.attr = {}
         
-    def add_method(self, c, *args):
-        if not c in self.methods:
-            self.methods[c] = [ c + '.' + x for x in args]
+    def add_method(self, A, B, args):
+        if not A in self.methods:
+            self.methods[A] = [ (B + '.' + x) for x in args]
             return
 
-        meths = self.methods[c]
+        meths = self.methods[A]
         new_meths = meths.copy()
         for a in args:
             flag = True
@@ -17,15 +17,14 @@ class virtual_table:
                 m = meths[i]
                 mm = m[m.find('.') + 1:]
                 if mm == a:
-                    new_meths[i](c + '.' + a)
+                    new_meths[i] = (B + '.' + a)
                     flag = False
                     break
             if flag:
-                new_meths.append(c + '.' + a)            
-        self.methods[c] = new_meths  
-
+                new_meths.append(B + '.' + a)            
+        self.methods[A] = new_meths  
     
-    def add_attr(self, c, *args):
+    def add_attr(self, c, args):
         if not c in self.attr:
             self.attr[c] = []
         for a in args:
@@ -56,8 +55,14 @@ class Variables:
     def id(self, name):
         return len(self.variables) - self.variables[name] + 1
 
-    def pop_var(self, name):
-        self.variables.pop(name)
+    def pop_var(self):
+        n = str(len(self.variables))
+        if not self.variables.__contains__(n):
+            for k in self.variables:
+                if self.variables[k] == n:
+                    n = k
+                    break
+        self.variables.pop(n)
 
     def add_temp(self):
         name = len(self.variables) + 1
@@ -70,4 +75,5 @@ class Variables:
 
     def peek_last(self):
         return len(self.variables)
+    
     

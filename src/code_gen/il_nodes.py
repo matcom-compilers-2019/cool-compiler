@@ -2,17 +2,6 @@
 class ILNode():
     pass
 
-
-class vtableIL(ILNode):
-    def __init__(self, c, methods : []):
-        self.c = c
-        self.methods = methods 
-
-    def __str__(self):
-        result = 'vt_{}\n'.format(self.c)
-        for m in self.methods:
-            result += m + '\n'
-
 #Operations
 class BinOpIL(ILNode):
     def __init__(self, var : int, leftop : int, rightop : int, symb : str):
@@ -74,9 +63,10 @@ class CteToMemoIL(AssigmentNodeIL):
 
 #Allocate
 class AllocateIL(ILNode):
-    def __init__(self, var : int, size : int):
+    def __init__(self, var : int, size : int, typ):
         self.var = var
         self.size = size
+        self.typ = typ
     
     def __str__(self):
         return "{} = ALLOCATE {}".format(self.var, self.size)
@@ -117,3 +107,57 @@ class IfJumpIL(ILNode):
     def __str__(self):
         return 'IF {} GOTO {}'.format(self.var, self.label) 
         
+
+class HierarchyIL(ILNode):
+    def __init__(self, node : str, parent : str):
+        self.node = node
+        self.parent = parent
+    
+    def __str__(self):
+        return 'TYPE OF {} DESCENDANT OF {}'.format(self.node, self.parent)
+
+class VirtualTableIL(ILNode):
+    def __init__(self, name, methods):
+        self.name = name
+        self.methods = methods
+
+    def __str__(self):
+        result = ''
+        result += self.name + "\n"
+        result += "METHODS\n"
+        for m in self.methods:
+            result += m + "\n"
+        return result
+
+class PopIL(ILNode):
+    def __init__(self, cant):
+        self.cant = cant
+    def __str__(self):
+        return 'POP {}\n'.format(self.cant)
+
+class PushIL(ILNode):
+    def __init__(self, val):
+        self.val = val
+    def __str__(self):
+        return 'PUSH {}\n'.format(self.val)
+
+class ReturnIL(ILNode):
+    pass
+
+class PushPCIL(ILNode):
+    pass
+
+class DispatchIL(ILNode):
+    def __init__(self, obj : int, offset):
+        self.object = obj
+        self.offset = offset
+
+class DispatchParentIL(ILNode):
+    def __init__(self, method):
+        self.method = method
+
+class InheritIL(ILNode):
+    def __init__(self, child, parent):
+        self.child = child
+        self.parent = parent
+
