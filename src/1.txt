@@ -1,0 +1,143 @@
+.data
+buffer:
+.space 65536
+strsubstrexception: .asciiz "Substring index exception
+"
+
+Object:
+.word None
+
+
+IO:
+.word Object
+
+
+Int:
+.word Object
+
+
+Bool:
+.word Object
+
+
+String:
+.word Object
+
+
+Main:
+.word IO
+
+
+ObjectVT:
+.word Object
+.word Object.abort
+.word Object.type_name
+.word Object.copy
+
+
+IOVT:
+.word IO
+.word Object.abort
+.word Object.type_name
+.word Object.copy
+.word IO.out_string
+.word IO.out_int
+.word IO.in_string
+.word IO.out_int
+
+
+IntVT:
+.word Int
+.word Object.abort
+.word Object.type_name
+.word Object.copy
+
+
+BoolVT:
+.word Bool
+.word Object.abort
+.word Object.type_name
+.word Object.copy
+
+
+StringVT:
+.word String
+.word Object.abort
+.word Object.type_name
+.word Object.copy
+.word String.length
+.word String.concat
+.word String.substr
+
+
+MainVT:
+.word Main
+.word Object.abort
+.word Object.type_name
+.word Object.copy
+.word IO.out_string
+.word IO.out_int
+.word IO.in_string
+.word IO.out_int
+.word Main.main
+
+
+str1: .asciiz "Hello, World.\n"
+
+
+
+.globl main
+.text
+code.start:
+
+
+li $a0, 0
+sw $a0, ($sp)
+addiu $sp, $sp, 4
+
+
+li $v0, 9
+li $a0, 4
+syscall
+sw $v0, -4($sp)
+sw 
+
+
+Main.main:
+sw $ra, ($sp)
+
+
+li $a0, 0
+sw $a0, ($sp)
+addiu $sp, $sp, 4
+
+
+li $a0, 0
+sw $a0, ($sp)
+addiu $sp, $sp, 4
+
+
+la $a0, str1
+sw $a0, -4($sp)
+
+
+lw $a0, -4($sp)
+addiu $a0, $a0, -12
+lw $v0, ($a0)
+jalr $ra, $a0
+sw $v0, -4($sp)
+
+
+addiu $sp, $sp, -8
+
+
+lw $v0, ($sp)
+addiu $sp, $sp, -4
+lw $ra, ($sp)
+addiu $sp, $sp, -4
+jr $ra
+
+
+li $v0, 10
+syscall
+

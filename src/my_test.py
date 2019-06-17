@@ -5,12 +5,13 @@ from checksemantic.checksemantics import CheckSemanticsVisitor
 from checksemantic.scope import Scope
 from cool import fetch_program
 from code_gen.transpilator import *
+from code_gen.visitorMips import *
 
 import os, sys
 
 
 if __name__ == '__main__':
-    program = fetch_program(sys.argv[1])
+    program = fetch_program('test\\examples\\string-methods_newOK.cl')
 
     parser = Lark(grammar.grammar, start='program')
 
@@ -26,18 +27,41 @@ if __name__ == '__main__':
         for e in errors:
             print(e)
     else:
+        #cv = codeVisitor()
         cv = codeVisitor()
-        
-        cv.collectTypes(ast.class_list.classes)
+        cv.visit(ast)
 
-        print('Classes')
-        for clase in cv.vt.clases:
-            print (clase)
+        # for nod in cv.data:
+        #     print(nod)
         
-        print('Methods')
-        for m in cv.vt.methods.keys():
-            print (m + " " + str(cv.vt.methods[m]))
+        # print("HERE ENDS THE DATA!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 
-        print('Attributes')
-        for att in cv.vt.attr.keys():
-            print (att + " " + str(cv.vt.attr[att]))
+        # for nod in cv.code:
+        #     print(nod)
+        
+        # print("HERE ENDS THE CODE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+
+        # print("GENERATE MIPS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n")
+        
+        mips = MIPS(cv.code, cv.data)
+
+        code_lines = mips.generate()
+
+        print(code_lines)
+
+
+
+        
+    #     cv.collectTypes(ast.class_list.classes)
+
+    #     print('Classes')
+    #     for clase in cv.vt.clases:
+    #         print (clase)
+        
+    #     print('Methods')
+    #     for m in cv.vt.methods.keys():
+    #         print (m + " " + str(cv.vt.methods[m]))
+
+    #     print('Attributes')
+    #     for att in cv.vt.attr.keys():
+    #         print (att + " " + str(cv.vt.attr[att]))

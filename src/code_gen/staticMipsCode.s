@@ -10,13 +10,14 @@ inherit_false:
 li $v0, 0
 jr $ra
         
-            
-_copy:
-lw $a1, 0($sp)
-lw $a0, -4($sp)
+
+#Cambiado
+Object.copy:
+lw $a1, -4($sp)
+lw $a0, -8($sp)
 li $v0, 9
 syscall
-lw $a1, 0($sp)
+lw $a1, -4($sp)
 lw $a0, 4($a1)
 move $a3, $v0
 _copy.loop:
@@ -30,27 +31,27 @@ j _copy.loop
 _copy.end:
 jr $ra
 
-
-_abort:
+#Cambiado(Funciona)
+Object.abort:
 li $v0, 10
 syscall
 
-
-_out_string:
+#Cambiado(funciona)
+IO.out_string:
 li $v0, 4
-lw $a0, 0($sp)
+lw $a0, -4($sp)
 syscall
 jr $ra
 
-
-_out_int:
+#Cambiado(Funciona)
+IO.out_int:
 li $v0, 1
-lw $a0, 0($sp)
+lw $a0, -4($sp)
 syscall
 jr $ra
 
 
-_in_string:
+IO.in_string:
 move $a3, $ra
 la $a0, buffer
 li $a1, 65536
@@ -81,31 +82,31 @@ move $ra, $a3
 jr $ra
 
 
-_in_int:
+IO.in_int:
 li $v0, 5
 syscall
 jr $ra
 
-
-_stringlength:
-lw $a0, 0($sp)
+#(Cambiado)
+String.length:
+lw $a0, -4($sp)
 _stringlength.loop:
 lb $a1, 0($a0)
 beqz $a1, _stringlength.end
 addiu $a0, $a0, 1
 j _stringlength.loop
 _stringlength.end:
-lw $a1, 0($sp)
+lw $a1, -4($sp)
 subu $v0, $a0, $a1
 jr $ra
 
 
-_stringconcat:
+String.concat:
 move $a2, $ra
-jal _stringlength
+jal String.length
 move $v1, $v0
 addiu $sp, $sp, -4
-jal _stringlength
+jal String.length
 addiu $sp, $sp, 4
 add $v1, $v1, $v0
 addi $v1, $v1, 1
@@ -135,17 +136,17 @@ sb $zero, 0($v1)
 move $ra, $a2
 jr $ra
 
-
-_stringsubstr:
-lw $a0, -8($sp)
+#(Cambiado)
+String.substr:
+lw $a0, -12($sp)
 addiu $a0, $a0, 1
 li $v0, 9
 syscall
 move $v1, $v0
-lw $a0, 0($sp)
-lw $a1, -4($sp)
+lw $a0, -4($sp)
+lw $a1, -8($sp)
 add $a0, $a0, $a1
-lw $a2, -8($sp)
+lw $a2, -12($sp)
 _stringsubstr.loop:
 beqz $a2, _stringsubstr.end
 lb $a1, 0($a0)
@@ -187,5 +188,5 @@ li $v0, 0
 jr $ra
 _stringcmp.equals:
 li $v0, 1
-jr $ra\
+jr $ra
 

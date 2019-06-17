@@ -31,49 +31,53 @@ class virtual_table:
             self.attr[c].append(a)
     
     def get_size(self, c):
-        return len(self.attr[c] + 1)
+        return len(self.attr[c]) + 1
 
     def get_method_id(self, c, m):
         meths = self.methods[c]
-        for i in range(meths):
+        for i in range(len(meths)):
             mm = meths[i]
             mmm = mm[mm.find('.') + 1:]
             if mmm == m:
-                return i
+                return i + 1
 
     def get_attrs(self, c):
         return self.attr[c]
 
+    def get_attr_id(self, c, a):
+        attrs = self.attr[c]
+        for i in range(len(attrs)):
+            aa = attrs[i]
+            if aa == a:
+                return i + 1
+
 class Variables:
     def __init__(self):
         self.variables = {}
+        self.vars = []
         
-    def  add_var(self, name):
+    def add_var(self, name):
         self.variables[name] = len(self.variables) + 1 
-        return str(len(self.variables))
+        self.vars.append(name)
+        return name
 
     def id(self, name):
         return len(self.variables) - self.variables[name] + 1
 
     def pop_var(self):
-        n = str(len(self.variables))
-        if not self.variables.__contains__(n):
-            for k in self.variables:
-                if self.variables[k] == n:
-                    n = k
-                    break
-        self.variables.pop(n)
+        self.variables.pop(self.vars[-1])
+        self.vars.pop()
 
     def add_temp(self):
         name = len(self.variables) + 1
         self.add_var(str(name))
-        return str(len(self.variables))
-    
-    def pop_temp(self):
-        name = len(self.variables)
-        self.variables.pop(name)
+        return str(name)
 
     def peek_last(self):
-        return len(self.variables)
+        return self.vars[-1]
     
-    
+    def get_stack(self):
+        stack = '|'
+        for k in self.variables:
+            stack += str(self.id(k)) + '-' + k + '|'
+        return stack
