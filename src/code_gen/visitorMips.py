@@ -1,13 +1,15 @@
+import os
 from code_gen import il_nodes as il
 import visitor
 
 
 class MIPS:
-    def __init__(self, nodes_text, nodes_data):
+    def __init__(self, nodes_text, nodes_data, static_code = os.path.join('code_gen', 'staticMipsCode.s')):
         self.code_text = []
         self.code_data = []
         self.nodes_text = nodes_text
         self.nodes_data = nodes_data
+        self.static_code = static_code
     
     def generate(self):
         code_gen = ""
@@ -26,7 +28,9 @@ class MIPS:
         code_gen += "\n.globl main\n"
         code_gen += ".text\n"
 
-        fl = open('code_gen\staticMipsCode.s')
+
+        
+        fl = open(self.static_code)
 
         code_gen += fl.read()
 

@@ -1,8 +1,2 @@
-.PHONY: clean
-
-main:
-	# Compiling the compiler :)
-
-clean:
-	rm -rf build/*
-
+requirements:
+	pip3 install -r requirements

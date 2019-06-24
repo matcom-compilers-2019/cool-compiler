@@ -34,7 +34,7 @@ class codeVisitor:
 
         types = {'Object' : None, 'IO' : 'Object', 'Int' : 'Object', 'Bool' : 'Object', 'String' : 'Object'}
         methods = {'Object' : ['abort', 'type_name', 'copy'], \
-                   'IO' : ['out_string', 'out_int', 'in_string', 'out_int'], \
+                   'IO' : ['out_string', 'out_int', 'in_string', 'in_int'], \
                    'String' : ['length', 'concat', 'substr'],\
                    'Int' : [], 'Bool' : [] }
         attr = dict([ (x, []) for x in types ])
@@ -286,8 +286,8 @@ class codeVisitor:
         self.unary_op(node, variables, '~')
 
     @visitor.when(ast.NotNode)
-    def visit(self, node):
-        self.unary_op(node, Variables, '!')
+    def visit(self, node, variables):
+        self.unary_op(node, variables, '!')
 
     @visitor.when(ast.LetNode)
     def visit(self, node, variables):
@@ -359,7 +359,7 @@ class codeVisitor:
     @visitor.when(ast.DeclarationNode)
     def visit(self, node, variables : Variables):
         self.code.append(PushIL())
-        p = variables.add_var(node.name)
+        p = variables.add_var(node.name.value)
         
         if node.expr != None:
             self.visit(node.expr, variables)
@@ -619,14 +619,3 @@ def start():
 
 if __name__ == '__main__':
     start()
-
-
-
-# ShortDispatchNode
-# PointDispatchNode
-# ParentDispatchNode
-
-# CaseNode **
-
-# StrtingNode
-# VoidNode
