@@ -30,8 +30,13 @@ String_INH:
 
 
 #Hierachy
+A_INH:
+.word Object_INH
+
+
+#Hierachy
 Main_INH:
-.word IO_INH
+.word Object_INH
 
 
 #Virtual_Table
@@ -82,32 +87,21 @@ String_VT:
 
 
 #Virtual_Table
+A_VT:
+.word A_INH
+.word Object.abort
+.word Object.type_name
+.word Object.copy
+.word A.f
+
+
+#Virtual_Table
 Main_VT:
 .word Main_INH
 .word Object.abort
 .word Object.type_name
 .word Object.copy
-.word IO.out_string
-.word IO.out_int
-.word IO.in_string
-.word IO.in_int
 .word Main.main
-
-
-#String
-str1: .asciiz "this is a"
-
-
-#String
-str2: .asciiz "\n"
-
-
-#String
-str3: .asciiz " string\n"
-
-
-#String
-str4: .asciiz "\n"
 
 
 
@@ -329,7 +323,7 @@ addiu $sp, $sp, 4
 
 #Allocate
 li $v0, 9
-li $a0, 8
+li $a0, 4
 syscall
 sw $v0, -4($sp)
 la $a1, Main_VT
@@ -345,7 +339,7 @@ sw $v0, -8($sp)
 #Dispatch
 lw $a0, -4($sp)
 lw $a0, ($a0)
-addiu $a0, $a0, 32
+addiu $a0, $a0, 16
 lw $v0, ($a0)
 jalr $ra, $v0
 sw $v0, -12($sp)
@@ -456,7 +450,7 @@ jr $ra
 
 
 #Label
-Main.Constructor:
+A.Constructor:
 sw $ra, ($sp)
 addiu $sp, $sp, 4
 
@@ -467,19 +461,251 @@ sw $a0, ($sp)
 addiu $sp, $sp, 4
 
 
-#Load_Label
-la $a0, str1
-sw $a0, -4($sp)
+#Return
+lw $v0, -4($sp)
+addiu $sp, $sp, -4
+lw $ra, -4($sp)
+addiu $sp, $sp, -4
+jr $ra
 
 
-#VarToMemo
-lw $a0, -4($sp)
-lw $a1, -12($sp)
-sw $a0, 4($a1)
+#Label
+A.f:
+sw $ra, ($sp)
+addiu $sp, $sp, 4
+
+
+#Push
+li $a0, 0
+sw $a0, ($sp)
+addiu $sp, $sp, 4
+
+
+#Push
+li $a0, 0
+sw $a0, ($sp)
+addiu $sp, $sp, 4
+
+
+#Label
+_loop.1:
+
+
+#Push
+li $a0, 0
+sw $a0, ($sp)
+addiu $sp, $sp, 4
+
+
+#Push
+li $a0, 1
+sw $a0, ($sp)
+addiu $sp, $sp, 4
+
+
+#Push
+li $a0, 1
+sw $a0, ($sp)
+addiu $sp, $sp, 4
+
+
+#BinOP
+lw $a0, -8($sp)
+lw $a1, -4($sp)
+seq $a0, $a0, $a1
+sw $a0, -12($sp)
 
 
 #Pop
+addiu $sp, $sp, -8
+
+
+#IfJumpIL
+lw $a0, -4($sp)
+bnez $a0, _body.1
+
+
+#Goto
+j _pool.1
+
+
+#Label
+_body.1:
+
+
+#Push
+li $a0, 1
+sw $a0, ($sp)
+addiu $sp, $sp, 4
+
+
+#Pop
+addiu $sp, $sp, -8
+
+
+#Goto
+j _loop.1
+
+
+#Label
+_pool.1:
+
+
+#Push
+li $a0, 0
+sw $a0, ($sp)
+addiu $sp, $sp, 4
+
+
+#Label
+_loop.2:
+
+
+#Push
+li $a0, 0
+sw $a0, ($sp)
+addiu $sp, $sp, 4
+
+
+#Push
+li $a0, 1
+sw $a0, ($sp)
+addiu $sp, $sp, 4
+
+
+#Push
+li $a0, 1
+sw $a0, ($sp)
+addiu $sp, $sp, 4
+
+
+#BinOP
+lw $a0, -8($sp)
+lw $a1, -4($sp)
+seq $a0, $a0, $a1
+sw $a0, -12($sp)
+
+
+#Pop
+addiu $sp, $sp, -8
+
+
+#IfJumpIL
+lw $a0, -4($sp)
+bnez $a0, _body.2
+
+
+#Goto
+j _pool.2
+
+
+#Label
+_body.2:
+
+
+#Push
+li $a0, 0
+sw $a0, ($sp)
+addiu $sp, $sp, 4
+
+
+#Label
+_loop.3:
+
+
+#Push
+li $a0, 0
+sw $a0, ($sp)
+addiu $sp, $sp, 4
+
+
+#Push
+li $a0, 2
+sw $a0, ($sp)
+addiu $sp, $sp, 4
+
+
+#Push
+li $a0, 2
+sw $a0, ($sp)
+addiu $sp, $sp, 4
+
+
+#BinOP
+lw $a0, -8($sp)
+lw $a1, -4($sp)
+seq $a0, $a0, $a1
+sw $a0, -12($sp)
+
+
+#Pop
+addiu $sp, $sp, -8
+
+
+#IfJumpIL
+lw $a0, -4($sp)
+bnez $a0, _body.3
+
+
+#Goto
+j _pool.3
+
+
+#Label
+_body.3:
+
+
+#Push
+li $a0, 2
+sw $a0, ($sp)
+addiu $sp, $sp, 4
+
+
+#Pop
+addiu $sp, $sp, -8
+
+
+#Goto
+j _loop.3
+
+
+#Label
+_pool.3:
+
+
+#Pop
+addiu $sp, $sp, -8
+
+
+#Goto
+j _loop.2
+
+
+#Label
+_pool.2:
+
+
+#VarToVar
+lw $a0, -4($sp)
+sw $a0, -12($sp)
+
+
+#Pop
+addiu $sp, $sp, -8
+
+
+#Return
+lw $v0, -4($sp)
 addiu $sp, $sp, -4
+lw $ra, -4($sp)
+addiu $sp, $sp, -4
+jr $ra
+
+
+#Label
+Main.Constructor:
+sw $ra, ($sp)
+addiu $sp, $sp, 4
 
 
 #Push
@@ -503,251 +729,9 @@ addiu $sp, $sp, 4
 
 
 #Push
-li $a0, 0
+li $a0, 1
 sw $a0, ($sp)
 addiu $sp, $sp, 4
-
-
-#Push
-li $a0, 0
-sw $a0, ($sp)
-addiu $sp, $sp, 4
-
-
-#Push
-li $a0, 0
-sw $a0, ($sp)
-addiu $sp, $sp, 4
-
-
-#Push
-li $a0, 0
-sw $a0, ($sp)
-addiu $sp, $sp, 4
-
-
-#MemoToVar
-lw $a0, -24($sp)
-lw $a1, 4($a0)
-sw $a1, -4($sp)
-
-
-#Dispatch
-lw $a0, -4($sp)
-lw $a0, ($a0)
-addiu $a0, $a0, 16
-lw $v0, ($a0)
-jalr $ra, $v0
-sw $v0, -8($sp)
-
-
-#Pop
-addiu $sp, $sp, -4
-
-
-#Dispatch
-lw $a0, -20($sp)
-lw $a0, ($a0)
-addiu $a0, $a0, 20
-lw $v0, ($a0)
-jalr $ra, $v0
-sw $v0, -8($sp)
-
-
-#Pop
-addiu $sp, $sp, -4
-
-
-#Push
-li $a0, 0
-sw $a0, ($sp)
-addiu $sp, $sp, 4
-
-
-#Push
-li $a0, 0
-sw $a0, ($sp)
-addiu $sp, $sp, 4
-
-
-#Push
-li $a0, 0
-sw $a0, ($sp)
-addiu $sp, $sp, 4
-
-
-#Load_Label
-la $a0, str2
-sw $a0, -4($sp)
-
-
-#Push
-li $a0, 0
-sw $a0, ($sp)
-addiu $sp, $sp, 4
-
-
-#Push
-li $a0, 0
-sw $a0, ($sp)
-addiu $sp, $sp, 4
-
-
-#MemoToVar
-lw $a0, -36($sp)
-lw $a1, 4($a0)
-sw $a1, -4($sp)
-
-
-#Push
-li $a0, 0
-sw $a0, ($sp)
-addiu $sp, $sp, 4
-
-
-#Load_Label
-la $a0, str3
-sw $a0, -4($sp)
-
-
-#Dispatch
-lw $a0, -8($sp)
-lw $a0, ($a0)
-addiu $a0, $a0, 20
-lw $v0, ($a0)
-jalr $ra, $v0
-sw $v0, -12($sp)
-
-
-#Pop
-addiu $sp, $sp, -8
-
-
-#Dispatch
-lw $a0, -8($sp)
-lw $a0, ($a0)
-addiu $a0, $a0, 20
-lw $v0, ($a0)
-jalr $ra, $v0
-sw $v0, -12($sp)
-
-
-#Pop
-addiu $sp, $sp, -8
-
-
-#Dispatch
-lw $a0, -24($sp)
-lw $a0, ($a0)
-addiu $a0, $a0, 16
-lw $v0, ($a0)
-jalr $ra, $v0
-sw $v0, -8($sp)
-
-
-#Pop
-addiu $sp, $sp, -4
-
-
-#Push
-li $a0, 0
-sw $a0, ($sp)
-addiu $sp, $sp, 4
-
-
-#Push
-li $a0, 0
-sw $a0, ($sp)
-addiu $sp, $sp, 4
-
-
-#Push
-li $a0, 0
-sw $a0, ($sp)
-addiu $sp, $sp, 4
-
-
-#Push
-li $a0, 0
-sw $a0, ($sp)
-addiu $sp, $sp, 4
-
-
-#MemoToVar
-lw $a0, -36($sp)
-lw $a1, 4($a0)
-sw $a1, -4($sp)
-
-
-#Push
-li $a0, 5
-sw $a0, ($sp)
-addiu $sp, $sp, 4
-
-
-#Push
-li $a0, 2
-sw $a0, ($sp)
-addiu $sp, $sp, 4
-
-
-#Dispatch
-lw $a0, -12($sp)
-lw $a0, ($a0)
-addiu $a0, $a0, 24
-lw $v0, ($a0)
-jalr $ra, $v0
-sw $v0, -16($sp)
-
-
-#Pop
-addiu $sp, $sp, -12
-
-
-#Push
-li $a0, 0
-sw $a0, ($sp)
-addiu $sp, $sp, 4
-
-
-#Load_Label
-la $a0, str4
-sw $a0, -4($sp)
-
-
-#Dispatch
-lw $a0, -8($sp)
-lw $a0, ($a0)
-addiu $a0, $a0, 20
-lw $v0, ($a0)
-jalr $ra, $v0
-sw $v0, -12($sp)
-
-
-#Pop
-addiu $sp, $sp, -8
-
-
-#Dispatch
-lw $a0, -28($sp)
-lw $a0, ($a0)
-addiu $a0, $a0, 16
-lw $v0, ($a0)
-jalr $ra, $v0
-sw $v0, -8($sp)
-
-
-#Pop
-addiu $sp, $sp, -4
-
-
-#VarToVar
-lw $a0, -4($sp)
-sw $a0, -16($sp)
-
-
-#Pop
-addiu $sp, $sp, -12
 
 
 #Return

@@ -9,7 +9,8 @@
             "type": "python",
             "request": "launch",
             "program": "${file}",
-            "console": "integratedTerminal"
+            "console": "integratedTerminal",
+            "args": ["src/test/TestCases/Bad/whileOK.cl"]
         },
         {
             "name": "Python: Remote Attach",

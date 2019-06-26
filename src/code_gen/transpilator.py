@@ -20,7 +20,6 @@ class codeVisitor:
         
         #Features
         self.vt = virtual_table()
-        self.variables = Variables()
 
         #Usefull
         self.depth = {}
@@ -290,22 +289,21 @@ class codeVisitor:
         self.unary_op(node, variables, '!')
 
     @visitor.when(ast.LetNode)
-    def visit(self, node, variables):
+    def visit(self, node, variables : Variables):
         self.code.append(PushIL())
         res = variables.add_temp()   
     
+        child_vars = variables.get_copy()
         for expr in node.let_part:
-            self.visit(expr, variables)
+            self.visit(expr, child_vars)
+            child_vars = child_vars.get_copy()
 
 
-        self.visit(node.in_part, variables)
-        p = variables.peek_last()
+        self.visit(node.in_part, child_vars)
+        p = child_vars.peek_last()
 
         self.code.append(VarToVarIL(res, p))
         
-        variables.pop_var()
-        for expr in node.let_part:
-            variables.pop_var()
         self.code.append(PopIL(len(node.let_part) + 1))
 
     
@@ -401,7 +399,7 @@ class codeVisitor:
     def visit(self, node, variables):
         self.code.append(CommentIL('LOOP'))
         self.code.append(PushIL())
-        res = self.variables.add_temp()
+        res = variables.add_temp()
 
         labelLOOP = LabelIL('_loop', self.getInt())
         labelPOOL = LabelIL('_pool', labelLOOP.snd)
@@ -601,7 +599,7 @@ class codeVisitor:
 
             self.code.append(VarToVarIL(variables.id(res), variables.id(p)))
             for _ in range(3):
-                self.variables.pop_var()
+                variables.pop_var()
             self.code.append(PopIL(3))
 
 

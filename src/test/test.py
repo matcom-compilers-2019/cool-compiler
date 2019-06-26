@@ -35,8 +35,8 @@ def compile(parser, program, exception_on_syntax=False, CIL = False, SPIM = Fals
 
                     code_lines = mips.generate()
                     return t, errors, code_lines
-                except:
-                    print('Error in translation to MIPS')
+                except errors:
+                    print(errors)
             return t, errors, []
         
         except:
@@ -53,6 +53,7 @@ def compile(parser, program, exception_on_syntax=False, CIL = False, SPIM = Fals
 def walk(dir, parser, exception_on_sintax = False, SPIM = False):
     for (curr_dir, sub_dirs, files) in os.walk(dir):
         for f in files:
+            print(f)
             program = fetch_program(os.path.join(curr_dir,f))
             #print(f)
             print('===================================')
@@ -76,7 +77,7 @@ if __name__ == '__main__':
 
     if len(sys.argv) == 3 and sys.argv[1] == '-p':
         program = fetch_program(sys.argv[2])
-        result, errors, mips_code = compile(parser, program, True) #Cambiar a falso antes de entregar
+        result, errors, mips_code = compile(parser, program, False) #Cambiar a falso antes de entregar
         if not result:
             for e in errors:
                 print(e)
@@ -92,7 +93,7 @@ if __name__ == '__main__':
     elif len(sys.argv) == 3 and sys.argv[1] == '-r':
         walk(sys.argv[2], parser, True, True) #Cambiar a falso antes de entregar
     elif len(sys.argv) == 1:
-        walk(os.path.join('.', 'test'), parser, False) #Cambiar a falso antes de entregar
+        walk(os.path.join('.', 'test'), parser, True) #Cambiar a falso antes de entregar
     else:
         print("Usage: python test.py [<option> <path>]")
         print()

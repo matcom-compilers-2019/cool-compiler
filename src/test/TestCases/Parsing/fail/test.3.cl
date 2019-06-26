@@ -1,1 +1,0 @@
-class main { IO.print("Hello\n

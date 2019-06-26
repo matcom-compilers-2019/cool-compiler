@@ -51,6 +51,7 @@ class virtual_table:
             if aa == a:
                 return i + 1
 
+
 class Variables:
     def __init__(self):
         self.variables = {}
@@ -81,3 +82,9 @@ class Variables:
         for k in self.variables:
             stack += str(self.id(k)) + '-' + k + '|'
         return stack
+
+    def get_copy(self):
+        inst = Variables()
+        inst.variables = self.variables.copy()
+        inst.vars = self.vars.copy()
+        return inst
