@@ -1,11 +1,11 @@
 # Documentación
 
-**Nombre** | **Grupo** | **Github**
+**Nombre** | **Github**
 --|--|--
-José Jorge Rodríguez Salgado | C411 | [@JoseJorgeXL](https://github.com/JoseJorgeXL)
-Christian Rodríguez Díaz | C411 | [@WrathXL](https://github.com/WrathXL)
-Hector Adrián Castellano Loaces | C411 | [@hectoradrian961030 ](https://github.com/hectoradrian961030)
-Alberto González Rosales | C411 | [@albexl](https://github.com/albexl)
+José Jorge Rodríguez Salgado | [@JoseJorgeXL](https://github.com/JoseJorgeXL)
+Christian Rodríguez Díaz  | [@WrathXL](https://github.com/WrathXL)
+Hector Adrián Castellano Loaces | [@hectoradrian961030 ](https://github.com/hectoradrian961030)
+Alberto González Rosales |  [@albexl](https://github.com/albexl)
 
 ## Requisitos y uso del presente compilador: 
 
